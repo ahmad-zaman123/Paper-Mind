@@ -33,6 +33,14 @@ export default function Dashboard() {
     refresh();
   }, []);
 
+  // Poll while any document is still processing so status flips to ready live.
+  useEffect(() => {
+    const isProcessing = documents.some((doc) => doc.status === "processing");
+    if (!isProcessing) return undefined;
+    const timer = setInterval(refresh, 2000);
+    return () => clearInterval(timer);
+  }, [documents]);
+
   function logout() {
     clearTokens();
     navigate("/login");
@@ -87,7 +95,7 @@ export default function Dashboard() {
           <div className="panel-head">
             <h2>Your documents</h2>
             <label className="btn primary small">
-              {uploading ? "Uploading…" : "Upload"}
+              {uploading ? "Uploading & indexing…" : "Upload"}
               <input
                 ref={fileInput}
                 type="file"

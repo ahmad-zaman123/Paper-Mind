@@ -22,6 +22,7 @@ class DocumentListCreateAPIView(generics.ListCreateAPIView):
         return (
             Document.objects.filter(owner=self.request.user)
             .annotate(chunk_count=Count("chunks"))
+            .order_by("-created")
         )
 
     def get_serializer_class(self, *args, **kwargs):

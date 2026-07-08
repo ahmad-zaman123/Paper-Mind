@@ -22,6 +22,7 @@ class ConversationListCreateAPIView(generics.ListCreateAPIView):
             Conversation.objects.filter(owner=self.request.user)
             .select_related("document")
             .annotate(message_count=Count("messages"))
+            .order_by("-created")
         )
 
     def get_serializer_class(self, *args, **kwargs):

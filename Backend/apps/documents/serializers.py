@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from apps.documents.constants import ALLOWED_EXTENSIONS, MAX_UPLOAD_SIZE_BYTES, MAX_UPLOAD_SIZE_MB
-from apps.documents.handlers import ingest_document
+from apps.documents.handlers import create_document
 from apps.documents.models import Document
 
 
@@ -48,7 +48,7 @@ class DocumentUploadSerializer(serializers.Serializer):
     def create(self, validated_data):
         uploaded_file = validated_data["file"]
         title = validated_data.get("title") or uploaded_file.name
-        return ingest_document(
+        return create_document(
             owner=self.context["request"].user,
             uploaded_file=uploaded_file,
             title=title,

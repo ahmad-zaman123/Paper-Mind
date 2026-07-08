@@ -8,6 +8,10 @@ from google.genai import types
 _MAX_RETRIES = 3
 _RETRY_BACKOFF_SECONDS = 2
 
+# Per-request timeout (milliseconds). Without it a stalled connection hangs the
+# call forever; with it, a stall raises and is retried.
+_REQUEST_TIMEOUT_MS = 30000
+
 # Number of texts sent per embedding request. Batching turns N sequential
 # round-trips into ceil(N / batch) requests, which keeps ingestion fast enough
 # to run synchronously.
@@ -36,7 +40,10 @@ class GeminiClient:
     def __init__(self):
         if not settings.GEMINI_API_KEY:
             raise RuntimeError("GEMINI_API_KEY is not configured.")
-        self._client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        self._client = genai.Client(
+            api_key=settings.GEMINI_API_KEY,
+            http_options=types.HttpOptions(timeout=_REQUEST_TIMEOUT_MS),
+        )
         self._embedding_model = _strip_model_prefix(settings.GEMINI_EMBEDDING_MODEL)
         self._chat_model = _strip_model_prefix(settings.GEMINI_CHAT_MODEL)
         self._dimensions = settings.EMBEDDING_DIMENSIONS
