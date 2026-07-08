@@ -1,7 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8009";
 
-const ACCESS_KEY = "docchat_access";
-const REFRESH_KEY = "docchat_refresh";
+const ACCESS_KEY = "papermind_access";
+const REFRESH_KEY = "papermind_refresh";
 
 export function getAccess() {
   return localStorage.getItem(ACCESS_KEY);

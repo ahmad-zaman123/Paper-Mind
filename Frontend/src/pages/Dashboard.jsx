@@ -84,7 +84,7 @@ export default function Dashboard() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <div className="brand">DocChat</div>
+        <div className="brand">Paper-Mind</div>
         <button className="link-btn" onClick={logout}>
           Sign out
         </button>

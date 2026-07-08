@@ -32,7 +32,7 @@ export default function Login() {
   return (
     <div className="auth-screen">
       <form className="auth-card" onSubmit={handleSubmit}>
-        <div className="brand">DocChat</div>
+        <div className="brand">Paper-Mind</div>
         <p className="auth-subtitle">Chat with your documents.</p>
 
         {isRegister && (

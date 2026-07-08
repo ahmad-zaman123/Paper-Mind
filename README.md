@@ -1,4 +1,4 @@
-# DocChat
+# Paper-Mind
 
 Chat with your documents. Upload a PDF, ask questions in plain English, and get
 answers grounded in the document — with citations back to the exact passages.

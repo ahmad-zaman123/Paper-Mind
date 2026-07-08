@@ -146,7 +146,7 @@ SIMPLE_JWT = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "DocChat API",
+    "TITLE": "Paper-Mind API",
     "DESCRIPTION": "Chat with your documents — retrieval-augmented Q&A over uploaded files.",
     "VERSION": "0.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
