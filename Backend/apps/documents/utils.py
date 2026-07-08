@@ -76,13 +76,18 @@ def chunk_text(text, chunk_size=None, overlap=None):
     return chunks
 
 
-def build_rag_prompt(question, chunks):
-    """Build a grounded prompt from the retrieved chunks and the question."""
+def build_rag_prompt(question, chunks, history=None):
+    """Build a grounded prompt from retrieved chunks, prior turns, and the question."""
 
     context_blocks = [
         "[" + str(index) + "] " + chunk.content for index, chunk in enumerate(chunks, 1)
     ]
     context = "\n\n".join(context_blocks)
+
+    history_block = ""
+    if history:
+        turns = [turn["role"].capitalize() + ": " + turn["content"] for turn in history]
+        history_block = "Conversation so far:\n" + "\n".join(turns) + "\n\n"
 
     prompt = (
         "You are a helpful assistant that answers questions about a single document. "
@@ -91,7 +96,8 @@ def build_rag_prompt(question, chunks):
         "contain that information. Cite the passages you rely on using their bracketed "
         "numbers, for example [1] or [2].\n\n"
         "Context:\n" + context + "\n\n"
-        "Question: " + question + "\n\n"
+        + history_block
+        + "Question: " + question + "\n\n"
         "Answer:"
     )
     return prompt

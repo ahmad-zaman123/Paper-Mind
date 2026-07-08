@@ -47,7 +47,12 @@ cp .env.example .env          # defaults run on local SQLite; set GEMINI_API_KEY
 | GET | `/api/documents/` | List your documents with status and chunk count |
 | GET | `/api/documents/{id}/` | Document detail with a text preview |
 | DELETE | `/api/documents/{id}/` | Delete a document and its chunks |
-| POST | `/api/documents/{id}/ask/` | Ask a question; returns a grounded answer with citations |
+| POST | `/api/documents/{id}/ask/` | One-shot question; returns a grounded answer with citations |
+| POST | `/api/conversations/` | Start a chat over a document |
+| GET | `/api/conversations/` | List your conversations |
+| GET | `/api/conversations/{id}/` | Conversation with its full message history |
+| DELETE | `/api/conversations/{id}/` | Delete a conversation |
+| POST | `/api/conversations/{id}/ask/` | Ask within a chat; remembers prior turns, persists messages |
 
 ### Asking a question
 

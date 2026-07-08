@@ -55,12 +55,12 @@ def ingest_document(*, owner, uploaded_file, title):
     return document
 
 
-def answer_question(*, document, question):
+def answer_question(*, document, question, history=None):
     """Answer a question about a document using retrieval-augmented generation.
 
     Embeds the question, retrieves the nearest chunks by cosine distance, prompts
-    the model with that context, and returns the answer alongside the chunks used
-    as citations.
+    the model with that context (and any prior conversation turns), and returns the
+    answer alongside the chunks used as citations.
     """
 
     client = GeminiClient()
@@ -77,7 +77,7 @@ def answer_question(*, document, question):
             "citations": [],
         }
 
-    prompt = build_rag_prompt(question, chunks)
+    prompt = build_rag_prompt(question, chunks, history=history)
     answer = client.generate_answer(prompt)
 
     citations = [
