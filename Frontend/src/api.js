@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8009";
+// Strip any trailing slash so paths never produce a double slash (which
+// triggers a redirect that browsers refuse to follow on CORS preflight).
+const API_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8009").replace(/\/+$/, "");
 
 const ACCESS_KEY = "papermind_access";
 const REFRESH_KEY = "papermind_refresh";
