@@ -1,7 +1,10 @@
 from dataclasses import dataclass
 
+from django.conf import settings
 from docx import Document as DocxDocument
 from pypdf import PdfReader
+
+from apps.documents.constants import MAX_CHUNKS_PER_DOCUMENT
 
 
 @dataclass
@@ -42,3 +45,32 @@ def extract_content(uploaded_file):
     if extension == "docx":
         return _extract_docx(uploaded_file)
     return _extract_plain_text(uploaded_file)
+
+
+def chunk_text(text, chunk_size=None, overlap=None):
+    """Split text into overlapping, word-boundary-aligned chunks for embedding."""
+
+    chunk_size = chunk_size or settings.CHUNK_SIZE
+    overlap = overlap or settings.CHUNK_OVERLAP
+
+    normalized = " ".join(text.split())
+    if not normalized:
+        return []
+
+    chunks = []
+    start = 0
+    length = len(normalized)
+    while start < length and len(chunks) < MAX_CHUNKS_PER_DOCUMENT:
+        end = start + chunk_size
+        if end < length:
+            boundary = normalized.rfind(" ", start, end)
+            if boundary > start:
+                end = boundary
+        piece = normalized[start:end].strip()
+        if piece:
+            chunks.append(piece)
+        if end >= length:
+            break
+        start = max(end - overlap, start + 1)
+
+    return chunks

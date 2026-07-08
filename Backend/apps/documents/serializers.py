@@ -6,6 +6,8 @@ from apps.documents.models import Document
 
 
 class DocumentSerializer(serializers.ModelSerializer):
+    chunk_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Document
         fields = (
@@ -15,6 +17,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             "status",
             "page_count",
             "char_count",
+            "chunk_count",
             "error_message",
             "created",
         )

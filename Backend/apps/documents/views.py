@@ -1,3 +1,4 @@
+from django.db.models import Count
 from rest_framework import generics
 from rest_framework.parsers import FormParser, MultiPartParser
 
@@ -13,7 +14,10 @@ class DocumentListCreateAPIView(generics.ListCreateAPIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def get_queryset(self, *args, **kwargs):
-        return Document.objects.filter(owner=self.request.user)
+        return (
+            Document.objects.filter(owner=self.request.user)
+            .annotate(chunk_count=Count("chunks"))
+        )
 
     def get_serializer_class(self, *args, **kwargs):
         if self.request.method == "POST":
@@ -25,4 +29,7 @@ class DocumentDetailAPIView(generics.RetrieveDestroyAPIView):
     serializer_class = DocumentDetailSerializer
 
     def get_queryset(self, *args, **kwargs):
-        return Document.objects.filter(owner=self.request.user)
+        return (
+            Document.objects.filter(owner=self.request.user)
+            .annotate(chunk_count=Count("chunks"))
+        )
