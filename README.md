@@ -10,8 +10,6 @@ answers grounded in the document — with citations back to the exact passages.
 Retrieval-augmented generation (RAG) built on Django REST Framework, Postgres +
 pgvector for vector search, and Google Gemini for embeddings and answers.
 
-_See it live at [paper-mind-sage.vercel.app](https://paper-mind-sage.vercel.app)._
-
 ## Features
 
 - **Upload** PDF, Word, or text files — text is extracted, chunked, and embedded automatically
