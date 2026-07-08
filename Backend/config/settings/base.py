@@ -163,8 +163,8 @@ CORS_ALLOWED_ORIGINS = env.list(
 # AI — Google Gemini (free tier via Google AI Studio)
 
 GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
-GEMINI_EMBEDDING_MODEL = env("GEMINI_EMBEDDING_MODEL", default="models/text-embedding-004")
-GEMINI_CHAT_MODEL = env("GEMINI_CHAT_MODEL", default="gemini-2.0-flash")
+GEMINI_EMBEDDING_MODEL = env("GEMINI_EMBEDDING_MODEL", default="models/gemini-embedding-001")
+GEMINI_CHAT_MODEL = env("GEMINI_CHAT_MODEL", default="models/gemini-2.5-flash")
 EMBEDDING_DIMENSIONS = 768
 
 # Ingestion tuning
