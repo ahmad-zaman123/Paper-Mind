@@ -35,6 +35,19 @@ cp .env.example .env          # defaults run on local SQLite; set GEMINI_API_KEY
 - API docs: http://127.0.0.1:8000/api/docs/
 - Get a free Gemini key at https://aistudio.google.com (AI Studio, not Vertex AI).
 
+## Local development (Frontend)
+
+```bash
+cd Frontend
+npm install
+cp .env.example .env          # VITE_API_URL points at the backend (default: local Django)
+npm run dev                   # http://localhost:5173
+```
+
+React + Vite single-page app: email auth, document upload, and a chat view that
+renders grounded answers with clickable citation chips. Talks to the backend via
+JWT bearer tokens (with automatic access-token refresh).
+
 ## API
 
 | Method | Endpoint | Description |
