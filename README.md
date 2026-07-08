@@ -35,11 +35,31 @@ cp .env.example .env          # defaults run on local SQLite; set GEMINI_API_KEY
 - API docs: http://127.0.0.1:8000/api/docs/
 - Get a free Gemini key at https://aistudio.google.com (AI Studio, not Vertex AI).
 
-## API (Phase 0)
+## API
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/auth/register/` | Create an account |
 | POST | `/api/auth/token/` | Obtain JWT access + refresh |
 | POST | `/api/auth/token/refresh/` | Refresh the access token |
-| GET | `/api/auth/me/` | Current user (authenticated) |
+| GET | `/api/auth/me/` | Current user |
+| POST | `/api/documents/` | Upload a document (PDF/DOCX/TXT/MD); chunks + embeds it |
+| GET | `/api/documents/` | List your documents with status and chunk count |
+| GET | `/api/documents/{id}/` | Document detail with a text preview |
+| DELETE | `/api/documents/{id}/` | Delete a document and its chunks |
+| POST | `/api/documents/{id}/ask/` | Ask a question; returns a grounded answer with citations |
+
+### Asking a question
+
+```http
+POST /api/documents/{id}/ask/
+{ "question": "How much was the third quarter invoice?" }
+
+200 OK
+{
+  "answer": "The third quarter invoice was 4200 dollars, due within 30 days [1, 2].",
+  "citations": [
+    { "chunk_index": 3, "page": 0, "content": "...", "score": 0.80 }
+  ]
+}
+```

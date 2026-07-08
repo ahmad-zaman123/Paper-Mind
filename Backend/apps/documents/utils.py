@@ -74,3 +74,24 @@ def chunk_text(text, chunk_size=None, overlap=None):
         start = max(end - overlap, start + 1)
 
     return chunks
+
+
+def build_rag_prompt(question, chunks):
+    """Build a grounded prompt from the retrieved chunks and the question."""
+
+    context_blocks = [
+        "[" + str(index) + "] " + chunk.content for index, chunk in enumerate(chunks, 1)
+    ]
+    context = "\n\n".join(context_blocks)
+
+    prompt = (
+        "You are a helpful assistant that answers questions about a single document. "
+        "Use ONLY the numbered context passages below to answer the question. "
+        "If the answer cannot be found in the context, say that the document does not "
+        "contain that information. Cite the passages you rely on using their bracketed "
+        "numbers, for example [1] or [2].\n\n"
+        "Context:\n" + context + "\n\n"
+        "Question: " + question + "\n\n"
+        "Answer:"
+    )
+    return prompt

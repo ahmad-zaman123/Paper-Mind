@@ -56,3 +56,19 @@ class DocumentUploadSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         return DocumentSerializer(instance, context=self.context).data
+
+
+class AskSerializer(serializers.Serializer):
+    question = serializers.CharField(min_length=3, max_length=1000, trim_whitespace=True)
+
+
+class CitationSerializer(serializers.Serializer):
+    chunk_index = serializers.IntegerField()
+    page = serializers.IntegerField()
+    content = serializers.CharField()
+    score = serializers.FloatField()
+
+
+class AnswerSerializer(serializers.Serializer):
+    answer = serializers.CharField()
+    citations = CitationSerializer(many=True)

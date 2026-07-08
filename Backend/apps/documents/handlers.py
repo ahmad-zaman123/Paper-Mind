@@ -1,7 +1,10 @@
+from django.conf import settings
+from pgvector.django import CosineDistance
+
 from apps.documents.choices import DocumentStatus
 from apps.documents.clients import GeminiClient
 from apps.documents.models import Chunk, Document
-from apps.documents.utils import chunk_text, extract_content
+from apps.documents.utils import build_rag_prompt, chunk_text, extract_content
 
 
 def ingest_document(*, owner, uploaded_file, title):
@@ -50,3 +53,40 @@ def ingest_document(*, owner, uploaded_file, title):
         document.save(update_fields=("status", "error_message", "modified"))
 
     return document
+
+
+def answer_question(*, document, question):
+    """Answer a question about a document using retrieval-augmented generation.
+
+    Embeds the question, retrieves the nearest chunks by cosine distance, prompts
+    the model with that context, and returns the answer alongside the chunks used
+    as citations.
+    """
+
+    client = GeminiClient()
+    query_vector = client.embed_query(question)
+
+    chunks = list(
+        Chunk.objects.filter(document=document)
+        .annotate(distance=CosineDistance("embedding", query_vector))
+        .order_by("distance")[: settings.RETRIEVAL_TOP_K]
+    )
+    if not chunks:
+        return {
+            "answer": "This document has no indexed content to answer from.",
+            "citations": [],
+        }
+
+    prompt = build_rag_prompt(question, chunks)
+    answer = client.generate_answer(prompt)
+
+    citations = [
+        {
+            "chunk_index": chunk.chunk_index,
+            "page": chunk.page,
+            "content": chunk.content,
+            "score": round(1 - chunk.distance, 4),
+        }
+        for chunk in chunks
+    ]
+    return {"answer": answer, "citations": citations}
