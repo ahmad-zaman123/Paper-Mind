@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/ahmad-zaman123/Paper-Mind/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmad-zaman123/Paper-Mind/actions/workflows/ci.yml)
 
+**🔗 Live demo: [paper-mind-sage.vercel.app](https://paper-mind-sage.vercel.app)**
+
 Chat with your documents. Upload a PDF, ask questions in plain English, and get
 answers grounded in the document — with citations back to the exact passages.
 
