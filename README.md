@@ -4,6 +4,11 @@
 
 **🔗 Live demo: [paper-mind-sage.vercel.app](https://paper-mind-sage.vercel.app)**
 
+> **Try it instantly** — sign in with **`demo@paper-mind.app`** / **`demo1234`**.
+> The account comes pre-loaded with a document and a chat, so you can ask a
+> question and see a cited answer right away. Or register your own account and
+> upload a file.
+
 Chat with your documents. Upload a PDF, ask questions in plain English, and get
 answers grounded in the document — with citations back to the exact passages.
 
