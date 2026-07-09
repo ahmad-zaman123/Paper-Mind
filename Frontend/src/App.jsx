@@ -10,11 +10,15 @@ function RequireAuth({ children }) {
   return isAuthenticated() ? children : <Navigate to="/login" replace />;
 }
 
+function Home() {
+  return isAuthenticated() ? <Dashboard /> : <Landing />;
+}
+
 export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/" element={isAuthenticated() ? <Dashboard /> : <Landing />} />
+      <Route path="/" element={<Home />} />
       <Route
         path="/c/:conversationId"
         element={
