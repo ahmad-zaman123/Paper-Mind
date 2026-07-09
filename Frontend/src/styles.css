@@ -598,7 +598,15 @@ body {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--border);
+}
+.preview-dot:nth-child(1) {
+  background: #ff5f57;
+}
+.preview-dot:nth-child(2) {
+  background: #febc2e;
+}
+.preview-dot:nth-child(3) {
+  background: #28c840;
 }
 .preview-file {
   margin-left: 8px;
