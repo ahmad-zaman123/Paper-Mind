@@ -120,21 +120,29 @@ export default function Dashboard() {
               upload(e.dataTransfer.files?.[0]);
             }}
           >
-            <p>
+            <p role="status">
               {uploading ? "Uploading and indexing…" : "Drop a file here, or choose one."}
               <small>PDF, Word, text or Markdown, up to 10 MB.</small>
             </p>
-            <label className="btn primary small">
+            {/* A real button, so the keyboard can reach it; it opens the (visually hidden) file input. */}
+            <input
+              ref={fileInput}
+              type="file"
+              accept=".pdf,.docx,.txt,.md"
+              onChange={(e) => upload(e.target.files?.[0])}
+              disabled={uploading}
+              hidden
+              tabIndex={-1}
+              aria-hidden="true"
+            />
+            <button
+              type="button"
+              className="btn primary small"
+              onClick={() => fileInput.current?.click()}
+              disabled={uploading}
+            >
               {uploading ? "Please wait" : "Upload"}
-              <input
-                ref={fileInput}
-                type="file"
-                accept=".pdf,.docx,.txt,.md"
-                onChange={(e) => upload(e.target.files?.[0])}
-                disabled={uploading}
-                hidden
-              />
-            </label>
+            </button>
           </div>
 
           {error && (
