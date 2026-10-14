@@ -327,3 +327,11 @@ button { font: inherit; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* back link on the sign-in screen */
+.back-link {
+  display: inline-flex; align-items: center; gap: 0.4rem; align-self: flex-start;
+  min-height: 2.25rem; margin: -0.35rem 0 0 -0.1rem; padding: 0 0.1rem;
+  color: var(--muted); font-weight: 600; font-size: 0.92rem; text-decoration: none;
+}
+.back-link:hover { color: var(--ink); }
