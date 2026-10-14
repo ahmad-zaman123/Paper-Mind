@@ -1,41 +1,46 @@
 import { useId, useState } from "react";
 
-const MARKER = /(\[\d+\])/g;
+// Matches [1] and also the grouped form models often write: [1, 2] or [1,2,3].
+const MARKER = /(\[\d+(?:\s*,\s*\d+)*\])/g;
 
 function reducedMotion() {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** The answer text with each [n] marker turned into a key that points at its margin note. */
+/** The answer text with each [n] marker turned into keys that point at their margin notes. */
 function AnswerText({ text, citations, activeKey, onKey }) {
   const parts = String(text || "").split(MARKER);
   return (
     <p className="answer">
       {parts.map((part, i) => {
-        const match = /^\[(\d+)\]$/.exec(part);
-        const n = match ? Number(match[1]) : 0;
-        if (n >= 1 && n <= citations.length) {
-          return (
-            <button
-              key={i}
-              type="button"
-              className={"key" + (activeKey === n ? " is-active" : "")}
-              onClick={() => onKey(n)}
-              aria-label={"Source " + n}
-              aria-pressed={activeKey === n}
-            >
-              {n}
-            </button>
-          );
-        }
-        return part;
+        if (!part.startsWith("[")) return part;
+        const numbers = part
+          .slice(1, -1)
+          .split(",")
+          .map((value) => Number(value.trim()));
+        const valid = numbers.filter((n) => n >= 1 && n <= citations.length);
+        // Not a citation we know about: leave the text exactly as the model wrote it.
+        if (valid.length === 0) return part;
+        return valid.map((n) => (
+          <button
+            key={i + "-" + n}
+            type="button"
+            className={"key" + (activeKey === n ? " is-active" : "")}
+            onClick={() => onKey(n)}
+            aria-label={"Source " + n}
+            aria-pressed={activeKey === n}
+          >
+            {n}
+          </button>
+        ));
       })}
     </p>
   );
 }
 
 function Note({ id, n, citation, active, open, onToggle }) {
-  const hasPage = citation.page !== null && citation.page !== undefined && citation.page !== "";
+  // Documents without real pages (text, Markdown) report page 0; that is not a page.
+  const hasPage = Number(citation.page) > 0;
   return (
     <article id={id} className={"note" + (active ? " is-active" : "") + (open ? " is-open" : "")}>
       <div className="note-head">
