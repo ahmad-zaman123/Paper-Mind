@@ -72,6 +72,12 @@ def chunk_text(text, chunk_size=None, overlap=None):
         if end >= length:
             break
         start = max(end - overlap, start + 1)
+        # Begin the next chunk on a word boundary: stepping back by `overlap` characters can land
+        # in the middle of a word, which made passages (and their citations) start mid-word.
+        if start > 0 and normalized[start - 1] != " ":
+            space = normalized.find(" ", start, end)
+            if space != -1:
+                start = space + 1
 
     return chunks
 

@@ -52,7 +52,10 @@ function Note({ id, n, citation, active, open, onToggle }) {
           </span>
         )}
       </div>
-      <p className="note-text">{citation.content}</p>
+      <p className="note-text">
+        {/^[a-z]/.test(String(citation.content || "").trimStart()) ? "… " : ""}
+        {citation.content}
+      </p>
       {String(citation.content || "").length > 220 && (
         <button type="button" className="note-toggle" onClick={onToggle} aria-expanded={open}>
           {open ? "Show less" : "Show full passage"}
