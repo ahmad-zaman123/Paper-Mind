@@ -219,6 +219,9 @@ button { font: inherit; }
   background: none; border: none; border-radius: 2px; cursor: pointer;
 }
 .key:hover, .key.is-active { background: var(--mark); color: var(--ink); }
+.key { position: relative; }
+.key::after { content: ""; position: absolute; inset: -0.7em -0.45em; }
+@media (pointer: coarse) { .key::after { inset: -1em -0.7em; } }
 
 /* the bracket that ties the answer to its notes */
 .exchange-rail::before {
@@ -258,7 +261,7 @@ button { font: inherit; }
 .starter-list button:hover { color: var(--rubric); }
 
 /* composer */
-.composer-bar { position: sticky; bottom: 0; background: color-mix(in srgb, var(--ground) 92%, transparent); border-top: 1px solid var(--rule); padding: 0.8rem clamp(1rem, 4vw, 2.5rem) 1rem; }
+.composer-bar { position: sticky; bottom: 0; background: var(--ground); border-top: 1px solid var(--rule); padding: 0.8rem clamp(1rem, 4vw, 2.5rem) 1rem; }
 .composer { width: min(var(--measure), 100%); margin: 0 auto 0 max(0px, calc((100% - (var(--measure) + var(--rail-w) + var(--margin-w))) / 2)); }
 .composer-row { display: flex; gap: 0.6rem; align-items: flex-end; }
 .composer textarea {
@@ -267,7 +270,7 @@ button { font: inherit; }
   border: 1px solid var(--ink-2); border-radius: 3px;
 }
 .composer textarea::placeholder { color: var(--muted); }
-.composer-hint { margin: 0.35rem 0 0; font-size: 0.78rem; color: var(--muted); }
+.composer-hint { margin: 0.35rem 0 0; font-size: 0.8125rem; color: var(--muted); }
 .chat-error { width: min(var(--measure), 100%); margin: 0 auto 0.6rem max(0px, calc((100% - (var(--measure) + var(--rail-w) + var(--margin-w))) / 2)); }
 
 @media (max-width: 62rem) {
@@ -335,3 +338,11 @@ button { font: inherit; }
   color: var(--muted); font-weight: 600; font-size: 0.92rem; text-decoration: none;
 }
 .back-link:hover { color: var(--ink); }
+
+/* a little less type on phones, so an answer does not take four screens */
+@media (max-width: 40rem) { .answer { font-size: 1.06rem; line-height: 1.6; } }
+
+/* loading skeleton for the library */
+.skeleton { opacity: 0.9; }
+.skeleton-bar { display: block; height: 1.1rem; background: var(--rule); border-radius: 2px; animation: pulse 1.4s ease-in-out infinite; }
+.index-row.skeleton .index-key { color: transparent; }

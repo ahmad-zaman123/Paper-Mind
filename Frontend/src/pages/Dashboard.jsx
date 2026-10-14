@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { api, clearTokens } from "../api.js";
 import Brand from "../components/Brand.jsx";
+import { useDocumentTitle } from "../utils/useDocumentTitle.js";
 
 const STATUS_LABEL = { ready: "Ready", processing: "Indexing", failed: "Failed" };
 
@@ -15,6 +16,7 @@ function keyFor(index) {
 }
 
 export default function Dashboard() {
+  useDocumentTitle("Library");
   const navigate = useNavigate();
   const fileInput = useRef(null);
   const [documents, setDocuments] = useState([]);
@@ -24,6 +26,14 @@ export default function Dashboard() {
   const [over, setOver] = useState(false);
   const [confirmId, setConfirmId] = useState(null);
   const [error, setError] = useState("");
+  const [slow, setSlow] = useState(false);
+
+  // The server can take a few seconds to wake up; say so rather than sit silent.
+  useEffect(() => {
+    if (!loading) return undefined;
+    const timer = setTimeout(() => setSlow(true), 4000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   async function refresh() {
     try {
@@ -99,6 +109,7 @@ export default function Dashboard() {
       </header>
 
       <main className="dashboard">
+        <h1 className="sr-only">Your library</h1>
         <section aria-labelledby="library-h">
           <div className="panel-head">
             <h2 id="library-h">Library</h2>
@@ -120,21 +131,29 @@ export default function Dashboard() {
               upload(e.dataTransfer.files?.[0]);
             }}
           >
-            <p>
+            <p role="status">
               {uploading ? "Uploading and indexing…" : "Drop a file here, or choose one."}
               <small>PDF, Word, text or Markdown, up to 10 MB.</small>
             </p>
-            <label className="btn primary small">
+            {/* A real button, so the keyboard can reach it; it opens the (visually hidden) file input. */}
+            <input
+              ref={fileInput}
+              type="file"
+              accept=".pdf,.docx,.txt,.md"
+              onChange={(e) => upload(e.target.files?.[0])}
+              disabled={uploading}
+              hidden
+              tabIndex={-1}
+              aria-hidden="true"
+            />
+            <button
+              type="button"
+              className="btn primary small"
+              onClick={() => fileInput.current?.click()}
+              disabled={uploading}
+            >
               {uploading ? "Please wait" : "Upload"}
-              <input
-                ref={fileInput}
-                type="file"
-                accept=".pdf,.docx,.txt,.md"
-                onChange={(e) => upload(e.target.files?.[0])}
-                disabled={uploading}
-                hidden
-              />
-            </label>
+            </button>
           </div>
 
           {error && (
@@ -144,7 +163,18 @@ export default function Dashboard() {
           )}
 
           {loading ? (
-            <p className="empty muted">Loading your library…</p>
+            <div role="status" aria-label="Loading your library">
+              <ul className="index" aria-hidden="true">
+                {[0, 1].map((n) => (
+                  <li key={n} className="index-row skeleton">
+                    <span className="index-key">&nbsp;</span>
+                    <span className="skeleton-bar" style={{ width: n ? "46%" : "62%" }} />
+                    <span className="skeleton-bar" style={{ gridColumn: 2, width: "34%", height: "0.7rem" }} />
+                  </li>
+                ))}
+              </ul>
+              {slow && <p className="note">Waking the server. This can take a few seconds the first time.</p>}
+            </div>
           ) : documents.length === 0 ? (
             <div className="empty">
               <strong>Nothing here yet.</strong>
@@ -183,8 +213,12 @@ export default function Dashboard() {
                   </div>
                   <div className="index-meta">
                     <Status status={doc.status} />
-                    <span>{doc.page_count} pages</span>
-                    <span>{doc.chunk_count} passages</span>
+                    <span>
+                      {doc.page_count} {doc.page_count === 1 ? "page" : "pages"}
+                    </span>
+                    <span>
+                      {doc.chunk_count} {doc.chunk_count === 1 ? "passage" : "passages"}
+                    </span>
                   </div>
                   {doc.status === "failed" && doc.error_message && (
                     <span className="index-error">{doc.error_message}</span>

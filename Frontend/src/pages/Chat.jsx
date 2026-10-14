@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api.js";
 import Brand from "../components/Brand.jsx";
 import Exchange from "../components/Exchange.jsx";
+import { useDocumentTitle } from "../utils/useDocumentTitle.js";
 
 const STARTERS = [
   "Summarise this document in five sentences.",
@@ -41,6 +42,7 @@ export default function Chat() {
   const [question, setQuestion] = useState("");
   const [thinking, setThinking] = useState(false);
   const [error, setError] = useState("");
+  useDocumentTitle(conversation ? conversation.document_title : "Chat");
 
   useEffect(() => {
     api
@@ -103,9 +105,9 @@ export default function Chat() {
         <Link to="/" className="link-btn">
           ‹ Library
         </Link>
-        <div className="running-head" title={conversation?.document_title || ""}>
+        <h1 className="running-head" title={conversation?.document_title || ""}>
           {conversation ? conversation.document_title : "Loading…"}
-        </div>
+        </h1>
         <Brand />
       </header>
 
