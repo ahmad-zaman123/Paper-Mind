@@ -2,9 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { api, clearTokens } from "../api.js";
+import Brand from "../components/Brand.jsx";
 
-function StatusPill({ status }) {
-  return <span className={"pill pill-" + status}>{status}</span>;
+const STATUS_LABEL = { ready: "Ready", processing: "Indexing", failed: "Failed" };
+
+function Status({ status }) {
+  return <span className={"status status-" + status}>{STATUS_LABEL[status] || status}</span>;
+}
+
+function keyFor(index) {
+  return String.fromCharCode(65 + (index % 26));
 }
 
 export default function Dashboard() {
@@ -14,6 +21,8 @@ export default function Dashboard() {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [over, setOver] = useState(false);
+  const [confirmId, setConfirmId] = useState(null);
   const [error, setError] = useState("");
 
   async function refresh() {
@@ -33,7 +42,7 @@ export default function Dashboard() {
     refresh();
   }, []);
 
-  // Poll while any document is still processing so status flips to ready live.
+  // Poll while any document is still processing so its status flips to ready live.
   useEffect(() => {
     const isProcessing = documents.some((doc) => doc.status === "processing");
     if (!isProcessing) return undefined;
@@ -46,8 +55,7 @@ export default function Dashboard() {
     navigate("/login");
   }
 
-  async function handleUpload(event) {
-    const file = event.target.files?.[0];
+  async function upload(file) {
     if (!file) return;
     setUploading(true);
     setError("");
@@ -72,7 +80,7 @@ export default function Dashboard() {
   }
 
   async function removeDocument(id) {
-    if (!confirm("Delete this document and its chats?")) return;
+    setConfirmId(null);
     try {
       await api.deleteDocument(id);
       await refresh();
@@ -84,87 +92,139 @@ export default function Dashboard() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <div className="brand">Paper-Mind</div>
+        <Brand />
         <button className="link-btn" onClick={logout}>
           Sign out
         </button>
       </header>
 
       <main className="dashboard">
-        <section className="panel">
+        <section aria-labelledby="library-h">
           <div className="panel-head">
-            <h2>Your documents</h2>
+            <h2 id="library-h">Library</h2>
+            <span className="count">
+              {documents.length} {documents.length === 1 ? "document" : "documents"}
+            </span>
+          </div>
+
+          <div
+            className={"dropzone" + (over ? " is-over" : "")}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setOver(true);
+            }}
+            onDragLeave={() => setOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setOver(false);
+              upload(e.dataTransfer.files?.[0]);
+            }}
+          >
+            <p>
+              {uploading ? "Uploading and indexing…" : "Drop a file here, or choose one."}
+              <small>PDF, Word, text or Markdown, up to 10 MB.</small>
+            </p>
             <label className="btn primary small">
-              {uploading ? "Uploading & indexing…" : "Upload"}
+              {uploading ? "Please wait" : "Upload"}
               <input
                 ref={fileInput}
                 type="file"
                 accept=".pdf,.docx,.txt,.md"
-                onChange={handleUpload}
+                onChange={(e) => upload(e.target.files?.[0])}
                 disabled={uploading}
                 hidden
               />
             </label>
           </div>
 
-          {error && <div className="error-banner">{error}</div>}
+          {error && (
+            <div className="error-banner" role="alert">
+              {error}
+            </div>
+          )}
 
           {loading ? (
-            <p className="muted">Loading…</p>
+            <p className="empty muted">Loading your library…</p>
           ) : documents.length === 0 ? (
-            <p className="muted">No documents yet. Upload a PDF, Word, or text file to begin.</p>
+            <div className="empty">
+              <strong>Nothing here yet.</strong>
+              Upload a document and ask it a question. Each answer will point to the passages behind it.
+            </div>
           ) : (
-            <ul className="list">
-              {documents.map((doc) => (
-                <li key={doc.id} className="list-row">
-                  <div className="list-main">
-                    <span className="list-title">{doc.title}</span>
-                    <span className="list-meta">
-                      <StatusPill status={doc.status} /> · {doc.chunk_count} chunks · {doc.page_count} pages
-                    </span>
-                    {doc.status === "failed" && doc.error_message && (
-                      <span className="list-error">{doc.error_message}</span>
-                    )}
-                  </div>
-                  <div className="list-actions">
+            <ul className="index">
+              {documents.map((doc, i) => (
+                <li key={doc.id} className="index-row">
+                  <span className="index-key" aria-hidden="true">
+                    {keyFor(i)}
+                  </span>
+                  <span className="index-title">{doc.title}</span>
+                  <div className="index-actions">
                     <button
                       className="btn primary small"
                       disabled={doc.status !== "ready"}
                       onClick={() => startChat(doc.id)}
                     >
-                      Chat
+                      {doc.status === "processing" ? "Indexing…" : "Ask"}
                     </button>
-                    <button className="btn ghost small" onClick={() => removeDocument(doc.id)}>
-                      Delete
-                    </button>
+                    {confirmId === doc.id ? (
+                      <>
+                        <button className="btn outline small" onClick={() => removeDocument(doc.id)}>
+                          Delete document and chats
+                        </button>
+                        <button className="btn ghost small" onClick={() => setConfirmId(null)}>
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <button className="btn ghost small" onClick={() => setConfirmId(doc.id)}>
+                        Delete
+                      </button>
+                    )}
                   </div>
+                  <div className="index-meta">
+                    <Status status={doc.status} />
+                    <span>{doc.page_count} pages</span>
+                    <span>{doc.chunk_count} passages</span>
+                  </div>
+                  {doc.status === "failed" && doc.error_message && (
+                    <span className="index-error">{doc.error_message}</span>
+                  )}
                 </li>
               ))}
             </ul>
           )}
         </section>
 
-        <section className="panel">
+        <section aria-labelledby="chats-h">
           <div className="panel-head">
-            <h2>Recent chats</h2>
+            <h2 id="chats-h">Conversations</h2>
           </div>
           {conversations.length === 0 ? (
-            <p className="muted">Your conversations will appear here.</p>
+            <p className="empty muted">Your conversations will appear here.</p>
           ) : (
-            <ul className="list">
+            <ul className="index">
               {conversations.map((c) => (
                 <li
                   key={c.id}
-                  className="list-row clickable"
+                  className="index-row clickable"
+                  style={{ gridTemplateColumns: "minmax(0, 1fr)" }}
                   onClick={() => navigate("/c/" + c.id)}
                 >
-                  <div className="list-main">
-                    <span className="list-title">{c.title || "Untitled chat"}</span>
-                    <span className="list-meta">
-                      {c.document_title} · {c.message_count} messages
-                    </span>
-                  </div>
-                  <span className="chevron">›</span>
+                  <button
+                    type="button"
+                    className="link-btn index-title"
+                    style={{ textAlign: "left", textDecoration: "none" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate("/c/" + c.id);
+                    }}
+                  >
+                    {c.title || "Untitled conversation"}
+                  </button>
+                  <span className="index-meta" style={{ gridColumn: 1 }}>
+                    <span>{c.document_title}</span>
+                    <span>{c.message_count} messages</span>
+                  </span>
                 </li>
               ))}
             </ul>
