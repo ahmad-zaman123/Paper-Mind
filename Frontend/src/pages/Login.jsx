@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { api } from "../api.js";
+import BackLink from "../components/BackLink.jsx";
 import Brand from "../components/Brand.jsx";
 
 const DEMO_EMAIL = "demo@paper-mind.app";
@@ -61,6 +62,7 @@ export default function Login() {
   return (
     <div className="auth-screen">
       <form className="auth-card" onSubmit={handleSubmit}>
+        <BackLink />
         <Brand />
         <h1>{isRegister ? "Create your library." : "Back to your documents."}</h1>
         <p className="auth-subtitle">
