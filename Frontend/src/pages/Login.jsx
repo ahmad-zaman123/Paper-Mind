@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { api } from "../api.js";
+import Brand from "../components/Brand.jsx";
 
 const DEMO_EMAIL = "demo@paper-mind.app";
 const DEMO_PASSWORD = "demo1234";
@@ -17,9 +18,7 @@ function EyeIcon({ off }) {
         strokeLinejoin="round"
       />
       <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6" />
-      {off && (
-        <path d="M4 4l16 16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      )}
+      {off && <path d="M4 4l16 16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />}
     </svg>
   );
 }
@@ -52,17 +51,30 @@ export default function Login() {
     }
   }
 
+  function useDemo() {
+    setIsRegister(false);
+    setEmail(DEMO_EMAIL);
+    setPassword(DEMO_PASSWORD);
+    setError("");
+  }
+
   return (
     <div className="auth-screen">
       <form className="auth-card" onSubmit={handleSubmit}>
-        <div className="brand">Paper-Mind</div>
-        <p className="auth-subtitle">Chat with your documents.</p>
+        <Brand />
+        <h1>{isRegister ? "Create your library." : "Back to your documents."}</h1>
+        <p className="auth-subtitle">
+          {isRegister
+            ? "Upload a document and ask it questions. Every answer cites its source."
+            : "Sign in to ask your documents questions."}
+        </p>
 
         {isRegister && (
           <label className="field">
             <span>Full name</span>
             <input
               type="text"
+              autoComplete="name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Ada Lovelace"
@@ -75,6 +87,7 @@ export default function Login() {
           <input
             type="email"
             required
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
@@ -88,9 +101,10 @@ export default function Login() {
               type={showPassword ? "text" : "password"}
               required
               minLength={8}
+              autoComplete={isRegister ? "new-password" : "current-password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="At least 8 characters"
             />
             <button
               type="button"
@@ -104,22 +118,31 @@ export default function Login() {
           </div>
         </label>
 
-        {error && <div className="error-banner">{error}</div>}
+        {error && (
+          <div className="error-banner" role="alert">
+            {error}
+          </div>
+        )}
 
         <button className="btn primary" type="submit" disabled={busy}>
-          {busy ? "Please wait…" : isRegister ? "Create account" : "Sign in"}
+          {busy ? "One moment…" : isRegister ? "Create account" : "Sign in"}
         </button>
 
-        <button
-          type="button"
-          className="link-btn"
-          onClick={() => {
-            setError("");
-            setIsRegister(!isRegister);
-          }}
-        >
-          {isRegister ? "Already have an account? Sign in" : "New here? Create an account"}
-        </button>
+        <div className="auth-alt">
+          <button
+            type="button"
+            className="link-btn"
+            onClick={() => {
+              setError("");
+              setIsRegister(!isRegister);
+            }}
+          >
+            {isRegister ? "Already have an account? Sign in" : "New here? Create an account"}
+          </button>
+          <button type="button" className="link-btn" onClick={useDemo}>
+            Use the demo account
+          </button>
+        </div>
       </form>
     </div>
   );

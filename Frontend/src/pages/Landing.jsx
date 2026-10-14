@@ -1,51 +1,45 @@
 import { Link } from "react-router-dom";
 
-function LogoMark() {
-  return (
-    <span className="logo-mark" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-        <path
-          d="M6 3h8l4 4v14H6V3z"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-        <path d="M14 3v4h4" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-        <path
-          d="M9 12h6M9 15.5h6M9 8.5h2"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-        />
-      </svg>
-    </span>
-  );
-}
+import Brand from "../components/Brand.jsx";
+import Exchange from "../components/Exchange.jsx";
+
+// A synthetic example, labelled as such on the page.
+const EXAMPLE = {
+  question: "Which models does it use?",
+  content:
+    "It embeds each passage with gemini-embedding-001 [1] and writes the answer with gemini-2.5-flash, grounded only in your document [2].",
+  citations: [
+    {
+      page: 1,
+      score: 0.89,
+      content:
+        "Each document is split into overlapping passages. Every passage is embedded with gemini-embedding-001 and stored as a vector for similarity search.",
+    },
+    {
+      page: 2,
+      score: 0.84,
+      content:
+        "Answers are generated with gemini-2.5-flash from the retrieved passages only. If the document does not contain the answer, the assistant says so.",
+    },
+  ],
+};
 
 export default function Landing() {
   return (
     <div className="landing">
-      <div className="landing-glow" aria-hidden="true" />
-
       <header className="landing-nav">
-        <div className="landing-logo">
-          <LogoMark />
-          <span className="brand">Paper-Mind</span>
-        </div>
+        <Brand />
         <Link to="/login" className="link-btn">
           Sign in
         </Link>
       </header>
 
-      <main className="landing-hero">
-        <div className="hero-copy">
-          <span className="landing-eyebrow">Retrieval-augmented Q&amp;A</span>
-          <h1 className="landing-title">
-            Chat with your <span className="grad">documents</span>.
-          </h1>
+      <main className="landing-main">
+        <div>
+          <h1 className="landing-title">Chat with your documents.</h1>
           <p className="landing-lede">
-            Upload a PDF, ask questions in plain English, and get answers grounded in the
-            document — with citations back to the exact passages.
+            Upload a PDF, ask questions in plain English, and get answers grounded in the document,
+            with citations back to the exact passages.
           </p>
           <div className="landing-cta">
             <Link to="/login" state={{ register: true }} className="btn primary">
@@ -55,31 +49,33 @@ export default function Landing() {
               Try the live demo
             </Link>
           </div>
+
+          <dl className="landing-steps">
+            <div>
+              <dt>Upload</dt>
+              <dd>PDF, Word, text or Markdown, up to 10 MB.</dd>
+            </div>
+            <div>
+              <dt>Ask</dt>
+              <dd>In plain English. Follow-up questions remember the conversation.</dd>
+            </div>
+            <div>
+              <dt>Check</dt>
+              <dd>Every answer cites the passages it used, with page and match score.</dd>
+            </div>
+          </dl>
         </div>
 
-        <div className="hero-preview" aria-hidden="true">
-          <div className="preview-card">
-            <div className="preview-head">
-              <span className="preview-dot" />
-              <span className="preview-dot" />
-              <span className="preview-dot" />
-              <span className="preview-file">research-paper.pdf</span>
-            </div>
-            <div className="preview-body">
-              <div className="bubble-row from-user">
-                <div className="bubble">Which models does it use?</div>
-              </div>
-              <div className="bubble-row from-assistant">
-                <div className="bubble">
-                  It embeds chunks with <strong>gemini-embedding-001</strong> and writes
-                  answers with <strong>gemini-2.5-flash</strong>, grounded only in your
-                  document.
-                  <span className="preview-cite">About Paper-Mind · p.1 · 0.89</span>
-                </div>
-              </div>
-            </div>
+        <figure className="specimen" style={{ margin: 0 }}>
+          <div className="specimen-file">
+            <span>about-paper-mind.pdf</span>
+            <span>Example</span>
           </div>
-        </div>
+          <Exchange {...EXAMPLE} />
+          <figcaption className="specimen-caption">
+            An example answer. The numbered keys point to the passages in the margin.
+          </figcaption>
+        </figure>
       </main>
     </div>
   );
