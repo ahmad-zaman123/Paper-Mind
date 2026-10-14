@@ -63,7 +63,7 @@ export default function Login() {
     <div className="auth-screen">
       <form className="auth-card" onSubmit={handleSubmit}>
         <BackLink />
-        <Brand />
+        <Brand to="/" />
         <h1>{isRegister ? "Create your library." : "Back to your documents."}</h1>
         <p className="auth-subtitle">
           {isRegister
