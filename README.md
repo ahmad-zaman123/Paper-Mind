@@ -23,11 +23,9 @@
   <a href="#-deployment--ci">Deployment</a>
 </p>
 
-<!-- Hero screenshot: add docs/screenshots/chat.png (a question with its cited answer), then uncomment:
 <p align="center">
   <img src="docs/screenshots/chat.png" alt="Paper-Mind answering a question with citations" width="860" />
 </p>
--->
 
 ---
 
