@@ -346,3 +346,9 @@ button { font: inherit; }
 .skeleton { opacity: 0.9; }
 .skeleton-bar { display: block; height: 1.1rem; background: var(--rule); border-radius: 2px; animation: pulse 1.4s ease-in-out infinite; }
 .index-row.skeleton .index-key { color: transparent; }
+
+/* Google sign-in (shown only when VITE_GOOGLE_CLIENT_ID is set) */
+.google-signin { display: grid; gap: 0.9rem; }
+.google-signin-button { display: flex; justify-content: center; min-height: 40px; }
+.google-signin-or { display: flex; align-items: center; gap: 0.75rem; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.google-signin-or::before, .google-signin-or::after { content: ""; flex: 1; height: 1px; background: currentColor; opacity: 0.35; }

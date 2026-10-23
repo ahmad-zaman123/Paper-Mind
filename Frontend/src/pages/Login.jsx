@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { api } from "../api.js";
 import BackLink from "../components/BackLink.jsx";
 import Brand from "../components/Brand.jsx";
+import GoogleButton from "../components/GoogleButton.jsx";
 import { useDocumentTitle } from "../utils/useDocumentTitle.js";
 
 const DEMO_EMAIL = "demo@paper-mind.app";
@@ -61,6 +62,22 @@ export default function Login() {
     setError("");
   }
 
+  const handleGoogle = useCallback(
+    async (credential) => {
+      setError("");
+      setBusy(true);
+      try {
+        await api.loginWithGoogle(credential);
+        navigate("/");
+      } catch (err) {
+        setError(err.message || "Google sign-in failed.");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [navigate],
+  );
+
   return (
     <div className="auth-screen">
       <form className="auth-card" onSubmit={handleSubmit}>
@@ -72,6 +89,8 @@ export default function Login() {
             ? "Upload a document and ask it questions. Every answer cites its source."
             : "Sign in to ask your documents questions."}
         </p>
+
+        <GoogleButton onCredential={handleGoogle} onError={setError} text={isRegister ? "signup_with" : "continue_with"} />
 
         {isRegister && (
           <label className="field">

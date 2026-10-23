@@ -88,6 +88,12 @@ export const api = {
     return data;
   },
   me: () => apiRequest("/api/auth/me/"),
+  /** Exchange a Google ID token (from the Google button) for our JWT pair; creates the account on first use. */
+  loginWithGoogle: async (credential) => {
+    const data = await apiRequest("/api/auth/google/", { method: "POST", body: { credential }, retry: false });
+    setTokens(data.access, data.refresh);
+    return data;
+  },
 
   listDocuments: () => apiRequest("/api/documents/"),
   uploadDocument: (file, title) => {

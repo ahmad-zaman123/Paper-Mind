@@ -172,3 +172,7 @@ EMBEDDING_DIMENSIONS = 768
 CHUNK_SIZE = 800
 CHUNK_OVERLAP = 100
 RETRIEVAL_TOP_K = 5
+
+
+# Google sign-in (optional). The OAuth client id from Google Cloud Console; empty disables the endpoint.
+GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID", default="")

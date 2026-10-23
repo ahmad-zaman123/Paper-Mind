@@ -83,10 +83,25 @@ npm run dev
 | `SECRET_KEY` | prod | Django secret key. `.env.example` ships an insecure dev default. |
 | `DEBUG` | no | `True` for local dev. |
 | `CORS_ALLOWED_ORIGINS` | no | Frontend origins allowed to call the API. Defaults to the local Vite server. |
+| `GOOGLE_CLIENT_ID` | no | Turns on "Continue with Google" on the sign-in page. See **Google sign-in** below. |
 | `GEMINI_EMBEDDING_MODEL` | no | Defaults to `models/gemini-embedding-001`. |
 | `GEMINI_CHAT_MODEL` | no | Defaults to `models/gemini-2.5-flash`. |
 
-Frontend: `VITE_API_URL` points at the backend (default `http://127.0.0.1:8009`).
+Frontend: `VITE_API_URL` points at the backend (default `http://127.0.0.1:8009`); `VITE_GOOGLE_CLIENT_ID` is the same Google client id, only needed for the Google button.
+
+</details>
+
+<details>
+<summary><b>🔑 Google sign-in</b> (optional, free)</summary>
+<br/>
+
+Adds a **Continue with Google** button to the sign-in page. First-time Google users get an account created from their Google email and name; existing accounts with the same email just sign in. Password sign-in keeps working as before.
+
+1. In [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials) create an **OAuth client ID** of type **Web application**. If asked, set up the consent screen first (External, app name, your email; no extra scopes).
+2. Under **Authorized JavaScript origins** add your frontend origins, for example `http://localhost:5173` and `https://<your-frontend>.vercel.app`. No redirect URI is needed.
+3. Put the client ID in `GOOGLE_CLIENT_ID` (backend) **and** `VITE_GOOGLE_CLIENT_ID` (frontend) and redeploy both. There is no client secret in this flow: the backend verifies the Google ID token with Google's public keys and then issues the usual JWT pair from `POST /api/auth/google/`.
+
+Leave both variables empty and the button is hidden.
 
 </details>
 
@@ -151,7 +166,7 @@ Interactive Swagger docs at **`/api/docs/`** ([live](https://paper-mind-backend-
 
 | Area | Endpoints |
 |---|---|
-| **Auth** | `POST /api/auth/register/`, `/auth/token/`, `/auth/token/refresh/`, `GET /auth/me/` |
+| **Auth** | `POST /api/auth/register/`, `/auth/token/`, `/auth/token/refresh/`, `/auth/google/`, `GET /auth/me/` |
 | **Documents** | `GET`, `POST /api/documents/`, `GET`, `DELETE /api/documents/<id>/` |
 | **Ask a document** | `POST /api/documents/<id>/ask/` |
 | **Conversations** | `GET`, `POST /api/conversations/`, `GET`, `DELETE /api/conversations/<id>/` |
