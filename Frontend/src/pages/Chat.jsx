@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { api } from "../api.js";
+import { api, clearTokens } from "../api.js";
 import Brand from "../components/Brand.jsx";
 import Exchange from "../components/Exchange.jsx";
+import ProfileMenu from "../components/ProfileMenu.jsx";
 import { useDocumentTitle } from "../utils/useDocumentTitle.js";
 
 const STARTERS = [
@@ -42,7 +43,19 @@ export default function Chat() {
   const [question, setQuestion] = useState("");
   const [thinking, setThinking] = useState(false);
   const [error, setError] = useState("");
+  const [user, setUser] = useState(null);
   useDocumentTitle(conversation ? conversation.document_title : "Chat");
+
+  // Who is signed in, for the account menu. A failure here is not worth an error banner.
+  const loadUser = () => api.me().then(setUser).catch(() => {});
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  function logout() {
+    clearTokens();
+    navigate("/login");
+  }
 
   useEffect(() => {
     api
@@ -108,7 +121,10 @@ export default function Chat() {
         <h1 className="running-head" title={conversation?.document_title || ""}>
           {conversation ? conversation.document_title : "Loading…"}
         </h1>
-        <Brand />
+        <div className="topbar-right">
+          <Brand />
+          <ProfileMenu user={user} onSignOut={logout} changePassword={api.changePassword} onPasswordChanged={loadUser} />
+        </div>
       </header>
 
       <div className="chat-scroll" ref={scrollRef}>
