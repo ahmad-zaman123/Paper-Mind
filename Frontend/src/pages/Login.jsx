@@ -90,7 +90,7 @@ export default function Login() {
             : "Sign in to ask your documents questions."}
         </p>
 
-        <GoogleButton onCredential={handleGoogle} onError={setError} text={isRegister ? "signup_with" : "continue_with"} />
+        <GoogleButton onCredential={handleGoogle} onError={setError} />
 
         {isRegister && (
           <label className="field">
