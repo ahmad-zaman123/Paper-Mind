@@ -23,18 +23,41 @@ export function isAuthenticated() {
   return Boolean(getAccess());
 }
 
+// One refresh at a time: when several requests hit an expired token together
+// they all wait for the same new access token instead of each asking for one.
+let refreshing = null;
+
 async function refreshAccess() {
-  const refresh = localStorage.getItem(REFRESH_KEY);
-  if (!refresh) return false;
-  const res = await fetch(API_URL + "/api/auth/token/refresh/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh }),
-  });
-  if (!res.ok) return false;
-  const data = await res.json();
-  setTokens(data.access, null);
-  return true;
+  if (!refreshing) {
+    refreshing = (async () => {
+      const refresh = localStorage.getItem(REFRESH_KEY);
+      if (!refresh) return false;
+      try {
+        const res = await fetch(API_URL + "/api/auth/token/refresh/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh }),
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        setTokens(data.access, null);
+        return true;
+      } catch {
+        return false;
+      }
+    })().finally(() => {
+      refreshing = null;
+    });
+  }
+  return refreshing;
+}
+
+/** The session is over: forget the tokens and go to sign in, remembering where we were. */
+function sessionExpired() {
+  clearTokens();
+  if (window.location.pathname === "/login") return;
+  const here = window.location.pathname + window.location.search;
+  window.location.assign("/login?next=" + encodeURIComponent(here));
 }
 
 async function parse(res) {
@@ -67,11 +90,12 @@ export async function apiRequest(path, { method = "GET", body, form, retry = tru
 
   const res = await fetch(API_URL + path, { method, headers, body: payload });
 
-  if (res.status === 401 && retry) {
-    const refreshed = await refreshAccess();
-    if (refreshed) {
+  if (res.status === 401 && access) {
+    if (retry && (await refreshAccess())) {
       return apiRequest(path, { method, body, form, retry: false });
     }
+    sessionExpired();
+    throw Object.assign(new Error("Your session has expired. Please sign in again."), { status: 401 });
   }
   return parse(res);
 }

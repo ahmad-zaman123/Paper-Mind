@@ -10,6 +10,12 @@ import { useDocumentTitle } from "../utils/useDocumentTitle.js";
 const DEMO_EMAIL = "demo@paper-mind.app";
 const DEMO_PASSWORD = "demo1234";
 
+/** Where to go after signing in: the local path the session expired on, or the app's home. */
+function afterLogin(search, fallback) {
+  const next = new URLSearchParams(search).get("next") || "";
+  return next.startsWith("/") && !next.startsWith("//") ? next : fallback;
+}
+
 function EyeIcon({ off }) {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
@@ -29,7 +35,7 @@ function EyeIcon({ off }) {
 export default function Login() {
   useDocumentTitle("Sign in");
   const navigate = useNavigate();
-  const { state } = useLocation();
+  const { state, search } = useLocation();
   const [isRegister, setIsRegister] = useState(Boolean(state?.register));
   const [email, setEmail] = useState(state?.demo ? DEMO_EMAIL : "");
   const [fullName, setFullName] = useState("");
@@ -47,7 +53,7 @@ export default function Login() {
         await api.register({ email, full_name: fullName, password });
       }
       await api.login(email, password);
-      navigate("/");
+      navigate(afterLogin(search, "/"));
     } catch (err) {
       setError(err.message || "Something went wrong.");
     } finally {
@@ -68,7 +74,7 @@ export default function Login() {
       setBusy(true);
       try {
         await api.loginWithGoogle(credential);
-        navigate("/");
+        navigate(afterLogin(search, "/"));
       } catch (err) {
         setError(err.message || "Google sign-in failed.");
       } finally {
