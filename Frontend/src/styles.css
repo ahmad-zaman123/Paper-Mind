@@ -125,6 +125,8 @@ button { font: inherit; }
   background: var(--page);
   border-bottom: 1px solid var(--rule);
 }
+.topbar-right { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+.topbar-right .muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 18rem; font-size: 0.92rem; }
 .topbar .running-head {
   flex: 1; min-width: 0; text-align: center;
   font-family: var(--serif); font-size: 1.02rem; font-weight: 600;

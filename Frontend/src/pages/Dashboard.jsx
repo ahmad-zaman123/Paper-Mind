@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [confirmId, setConfirmId] = useState(null);
   const [error, setError] = useState("");
   const [slow, setSlow] = useState(false);
+  const [user, setUser] = useState(null);
 
   // The server can take a few seconds to wake up; say so rather than sit silent.
   useEffect(() => {
@@ -50,6 +51,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     refresh();
+    // Who is signed in, for the top bar. A failure here is not worth an error banner.
+    api.me().then(setUser).catch(() => {});
   }, []);
 
   // Poll while any document is still processing so its status flips to ready live.
@@ -103,9 +106,12 @@ export default function Dashboard() {
     <div className="app-shell">
       <header className="topbar">
         <Brand />
-        <button className="link-btn" onClick={logout}>
-          Sign out
-        </button>
+        <div className="topbar-right">
+          {user && <span className="muted">{user.email}</span>}
+          <button className="link-btn" onClick={logout}>
+            Sign out
+          </button>
+        </div>
       </header>
 
       <main className="dashboard">
