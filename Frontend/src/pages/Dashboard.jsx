@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { api, clearTokens } from "../api.js";
 import Brand from "../components/Brand.jsx";
+import ProfileMenu from "../components/ProfileMenu.jsx";
 import { useDocumentTitle } from "../utils/useDocumentTitle.js";
 
 const STATUS_LABEL = { ready: "Ready", processing: "Indexing", failed: "Failed" };
@@ -49,10 +50,12 @@ export default function Dashboard() {
     }
   }
 
+  // Who is signed in, for the account menu. A failure here is not worth an error banner.
+  const loadUser = () => api.me().then(setUser).catch(() => {});
+
   useEffect(() => {
     refresh();
-    // Who is signed in, for the top bar. A failure here is not worth an error banner.
-    api.me().then(setUser).catch(() => {});
+    loadUser();
   }, []);
 
   // Poll while any document is still processing so its status flips to ready live.
@@ -107,10 +110,7 @@ export default function Dashboard() {
       <header className="topbar">
         <Brand />
         <div className="topbar-right">
-          {user && <span className="muted">{user.email}</span>}
-          <button className="link-btn" onClick={logout}>
-            Sign out
-          </button>
+          <ProfileMenu user={user} onSignOut={logout} changePassword={api.changePassword} onPasswordChanged={loadUser} />
         </div>
       </header>
 

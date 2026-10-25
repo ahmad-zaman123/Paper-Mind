@@ -95,7 +95,7 @@ Frontend: `VITE_API_URL` points at the backend (default `http://127.0.0.1:8009`)
 <summary><b>🔑 Google sign-in</b> (optional, free)</summary>
 <br/>
 
-Adds a **Continue with Google** button to the sign-in page. First-time Google users get an account created from their Google email and name; existing accounts with the same email just sign in. Password sign-in keeps working as before.
+Adds a **Continue with Google** button to the sign-in page. First-time Google users get an account created from their Google email and name; existing accounts with the same email just sign in. Password sign-in keeps working as before, and a Google-created account can add a password later from the account menu.
 
 1. In [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials) create an **OAuth client ID** of type **Web application**. If asked, set up the consent screen first (External, app name, your email; no extra scopes).
 2. Under **Authorized JavaScript origins** add your frontend origins, for example `http://localhost:5173` and `https://<your-frontend>.vercel.app`. No redirect URI is needed.
@@ -166,7 +166,7 @@ Interactive Swagger docs at **`/api/docs/`** ([live](https://paper-mind-backend-
 
 | Area | Endpoints |
 |---|---|
-| **Auth** | `POST /api/auth/register/`, `/auth/token/`, `/auth/token/refresh/`, `/auth/google/`, `GET /auth/me/` |
+| **Auth** | `POST /api/auth/register/`, `/auth/token/`, `/auth/token/refresh/`, `/auth/google/`, `/auth/password/`, `GET /auth/me/` |
 | **Documents** | `GET`, `POST /api/documents/`, `GET`, `DELETE /api/documents/<id>/` |
 | **Ask a document** | `POST /api/documents/<id>/ask/` |
 | **Conversations** | `GET`, `POST /api/conversations/`, `GET`, `DELETE /api/conversations/<id>/` |
