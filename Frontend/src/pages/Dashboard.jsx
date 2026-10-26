@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { api, clearTokens } from "../api.js";
 import Brand from "../components/Brand.jsx";
 import ProfileMenu from "../components/ProfileMenu.jsx";
+import ThemeToggle from "../components/ThemeToggle.jsx";
 import { useDocumentTitle } from "../utils/useDocumentTitle.js";
 
 const STATUS_LABEL = { ready: "Ready", processing: "Indexing", failed: "Failed" };
@@ -110,6 +111,7 @@ export default function Dashboard() {
       <header className="topbar">
         <Brand />
         <div className="topbar-right">
+          <ThemeToggle />
           <ProfileMenu user={user} onSignOut={logout} changePassword={api.changePassword} onPasswordChanged={loadUser} />
         </div>
       </header>

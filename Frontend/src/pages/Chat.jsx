@@ -5,6 +5,7 @@ import { api, clearTokens } from "../api.js";
 import Brand from "../components/Brand.jsx";
 import Exchange from "../components/Exchange.jsx";
 import ProfileMenu from "../components/ProfileMenu.jsx";
+import ThemeToggle from "../components/ThemeToggle.jsx";
 import { useDocumentTitle } from "../utils/useDocumentTitle.js";
 
 const STARTERS = [
@@ -123,6 +124,7 @@ export default function Chat() {
         </h1>
         <div className="topbar-right">
           <Brand />
+          <ThemeToggle />
           <ProfileMenu user={user} onSignOut={logout} changePassword={api.changePassword} onPasswordChanged={loadUser} />
         </div>
       </header>

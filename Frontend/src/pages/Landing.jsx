@@ -31,10 +31,10 @@ export default function Landing() {
       <header className="landing-nav">
         <Brand />
         <div className="landing-nav-links">
+          <ThemeToggle />
           <Link to="/login" className="link-btn">
             Sign in
           </Link>
-          <ThemeToggle />
         </div>
       </header>
 
