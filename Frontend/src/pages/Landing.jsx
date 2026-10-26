@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 import Brand from "../components/Brand.jsx";
+import ThemeToggle from "../components/ThemeToggle.jsx";
 import Exchange from "../components/Exchange.jsx";
 
 // A synthetic example, labelled as such on the page.
@@ -29,9 +30,12 @@ export default function Landing() {
     <div className="landing">
       <header className="landing-nav">
         <Brand />
-        <Link to="/login" className="link-btn">
-          Sign in
-        </Link>
+        <div className="landing-nav-links">
+          <Link to="/login" className="link-btn">
+            Sign in
+          </Link>
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="landing-main">
