@@ -124,8 +124,8 @@ export default function Chat() {
         </h1>
         <div className="topbar-right">
           <Brand />
-          <ThemeToggle />
           <ProfileMenu user={user} onSignOut={logout} changePassword={api.changePassword} onPasswordChanged={loadUser} />
+          <ThemeToggle />
         </div>
       </header>
 

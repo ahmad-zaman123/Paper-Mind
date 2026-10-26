@@ -111,8 +111,8 @@ export default function Dashboard() {
       <header className="topbar">
         <Brand />
         <div className="topbar-right">
-          <ThemeToggle />
           <ProfileMenu user={user} onSignOut={logout} changePassword={api.changePassword} onPasswordChanged={loadUser} />
+          <ThemeToggle />
         </div>
       </header>
 
