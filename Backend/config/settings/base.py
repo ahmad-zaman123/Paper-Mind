@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import environ
 
@@ -189,4 +190,6 @@ EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = env("EMAIL_FROM", default=EMAIL_HOST_USER)
 PASSWORD_RESET_TIMEOUT = 15 * 60
 # Reset links open the frontend: its first allowed origin, never the request's Host header.
-APP_URL = CORS_ALLOWED_ORIGINS[0].rstrip("/")
+# Only the scheme and host are kept, in case the setting holds a full page address.
+_frontend = urlsplit(CORS_ALLOWED_ORIGINS[0])
+APP_URL = f"{_frontend.scheme}://{_frontend.netloc}"
