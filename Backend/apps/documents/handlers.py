@@ -64,6 +64,14 @@ def _index_document(document, file_bytes):
         document.save(update_fields=("status", "error_message", "modified"))
 
 
+def _citation_page(chunk, document):
+    """The page to cite. Passages indexed before pages were stored have page 0."""
+
+    if not chunk.page and document.page_count == 1 and document.filename.lower().endswith(".pdf"):
+        return 1
+    return chunk.page
+
+
 def answer_question(*, document, question, history=None):
     """Answer a question about a document using retrieval-augmented generation.
 
@@ -92,7 +100,7 @@ def answer_question(*, document, question, history=None):
     citations = [
         {
             "chunk_index": chunk.chunk_index,
-            "page": chunk.page,
+            "page": _citation_page(chunk, document),
             "content": chunk.content,
             "score": round(1 - chunk.distance, 4),
         }
