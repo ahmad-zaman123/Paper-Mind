@@ -218,7 +218,9 @@ button { font: inherit; }
 .empty strong { display: block; color: var(--ink); font-family: var(--serif); font-size: 1.15rem; margin-bottom: 0.25rem; }
 
 /* ---------- chat: the edition ---------- */
-.chat-scroll { flex: 1; overflow-y: auto; padding: clamp(1rem, 3vw, 2.25rem) clamp(1rem, 4vw, 2.5rem) 2rem; }
+/* A fixed-height shell makes the chat itself scroll, so new answers can be scrolled into view. */
+.chat-shell { height: 100vh; height: 100dvh; min-height: 0; }
+.chat-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: clamp(1rem, 3vw, 2.25rem) clamp(1rem, 4vw, 2.5rem) 2rem; }
 .sheet { width: min(calc(var(--measure) + var(--rail-w) + var(--margin-w)), 100%); margin: 0 auto; }
 
 .exchange {

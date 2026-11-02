@@ -114,7 +114,7 @@ export default function Chat() {
   const empty = exchanges.length === 0 && !thinking;
 
   return (
-    <div className="app-shell">
+    <div className="app-shell chat-shell">
       <header className="topbar">
         <Link to="/" className="link-btn">
           ‹ Library
