@@ -26,3 +26,14 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
 
     def __str__(self):
         return self.email
+
+
+class RateWindow(models.Model):
+    """One fixed-window counter. Kept in the database because serverless instances share no memory."""
+
+    key = models.CharField(max_length=320, primary_key=True)
+    count = models.PositiveIntegerField(default=0)
+    expires_at = models.DateTimeField(db_index=True)
+
+    class Meta:
+        db_table = "rate_windows"
