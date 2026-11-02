@@ -112,7 +112,14 @@ export const api = {
     return data;
   },
   me: () => apiRequest("/api/auth/me/"),
-  changePassword: (payload) => apiRequest("/api/auth/password/", { method: "POST", body: payload }),
+  /** Changing the password ends every session, so keep the new pair the server returns for this one. */
+  changePassword: async (payload) => {
+    const data = await apiRequest("/api/auth/password/", { method: "POST", body: payload });
+    setTokens(data.access, data.refresh);
+    return data;
+  },
+  forgotPassword: (email) => apiRequest("/api/auth/password/forgot/", { method: "POST", body: { email }, retry: false }),
+  resetPassword: (payload) => apiRequest("/api/auth/password/reset/", { method: "POST", body: payload, retry: false }),
   /** Exchange a Google ID token (from the Google button) for our JWT pair; creates the account on first use. */
   loginWithGoogle: async (credential) => {
     const data = await apiRequest("/api/auth/google/", { method: "POST", body: { credential }, retry: false });

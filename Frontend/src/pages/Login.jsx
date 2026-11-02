@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { api } from "../api.js";
 import Brand from "../components/Brand.jsx";
@@ -164,6 +164,12 @@ export default function Login() {
               </button>
             </div>
           </label>
+
+          {!isRegister && (
+            <Link to="/forgot-password" className="link-btn auth-forgot">
+              Forgot password?
+            </Link>
+          )}
 
           {error && (
             <div className="error-banner" role="alert">

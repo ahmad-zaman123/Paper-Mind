@@ -323,6 +323,7 @@ button { font: inherit; }
 .input-wrap input { padding-right: 2.8rem; }
 .reveal-btn { position: absolute; right: 0.2rem; top: 50%; transform: translateY(-50%); width: 2.2rem; height: 2.2rem; display: grid; place-items: center; background: none; border: none; color: var(--muted); cursor: pointer; border-radius: 3px; }
 .reveal-btn:hover { color: var(--ink); }
+.auth-forgot { align-self: flex-start; font-size: 0.88rem; }
 .auth-alt { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; padding-top: 0.5rem; border-top: 1px solid var(--rule-soft); }
 
 /* ---------- landing ---------- */
