@@ -45,7 +45,7 @@ jobs:
       - name: Backend tests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/papermind
-        run: python manage.py test apps.users apps.documents
+        run: python manage.py test apps.users apps.documents apps.conversations
 
   frontend:
     name: Frontend build

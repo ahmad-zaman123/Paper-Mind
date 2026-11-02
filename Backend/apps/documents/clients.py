@@ -5,6 +5,8 @@ import time
 from django.conf import settings
 from google import genai
 from google.genai import types
+from rest_framework import status
+from rest_framework.exceptions import APIException
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,12 @@ _REQUEST_TIMEOUT_MS = 30000
 # round-trips into ceil(N / batch) requests, which keeps ingestion fast enough
 # to run synchronously.
 _EMBED_BATCH_SIZE = 100
+
+
+class GeminiUnavailable(APIException):
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    default_detail = "The AI service is busy right now. Please try again in a little while."
+    default_code = "ai_unavailable"
 
 
 def _normalize(vector):
@@ -74,7 +82,8 @@ class GeminiClient:
             except Exception as error:
                 last_error = error
                 time.sleep(_RETRY_BACKOFF_SECONDS * (attempt + 1))
-        raise last_error
+        logger.warning("Embedding failed: %s", last_error)
+        raise GeminiUnavailable() from last_error
 
     def embed_documents(self, texts):
         texts = list(texts)
@@ -100,4 +109,4 @@ class GeminiClient:
             except Exception as error:
                 last_error = error
             logger.warning("Model %s failed: %s", model, last_error)
-        raise last_error
+        raise GeminiUnavailable() from last_error

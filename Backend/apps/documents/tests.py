@@ -4,7 +4,7 @@ from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, TestCase, override_settings
 
-from apps.documents.clients import GeminiClient
+from apps.documents.clients import GeminiClient, GeminiUnavailable
 from apps.documents.constants import MAX_CHUNKS_PER_DOCUMENT
 from apps.documents.handlers import _index_document, answer_question
 from apps.documents.models import Chunk, Document
@@ -157,5 +157,5 @@ class GenerateAnswerTests(SimpleTestCase):
         self.assertEqual(self.generate(SimpleNamespace(text=None), SimpleNamespace(text="Answer")), "Answer")
 
     def test_error_raised_when_every_model_fails(self):
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(GeminiUnavailable):
             self.generate(RuntimeError("429"), RuntimeError("429"))

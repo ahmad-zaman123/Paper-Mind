@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models import Count, Prefetch
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -65,23 +66,24 @@ class ConversationAskAPIView(generics.GenericAPIView):
         recent = list(conversation.messages.order_by("-created")[:HISTORY_WINDOW])[::-1]
         history = [{"role": message.role, "content": message.content} for message in recent]
 
-        Message.objects.create(
-            conversation=conversation,
-            role=MessageRole.USER,
-            content=question,
-        )
-
+        # Save nothing until there is an answer, so a failure leaves no unanswered question behind.
         result = answer_question(document=document, question=question, history=history)
 
-        assistant_message = Message.objects.create(
-            conversation=conversation,
-            role=MessageRole.ASSISTANT,
-            content=result["answer"],
-            citations=result["citations"],
-        )
+        with transaction.atomic():
+            Message.objects.create(
+                conversation=conversation,
+                role=MessageRole.USER,
+                content=question,
+            )
+            assistant_message = Message.objects.create(
+                conversation=conversation,
+                role=MessageRole.ASSISTANT,
+                content=result["answer"],
+                citations=result["citations"],
+            )
 
-        if not conversation.title:
-            conversation.title = question[:TITLE_FROM_QUESTION_CHARS]
-            conversation.save(update_fields=("title", "modified"))
+            if not conversation.title:
+                conversation.title = question[:TITLE_FROM_QUESTION_CHARS]
+                conversation.save(update_fields=("title", "modified"))
 
         return Response(MessageSerializer(assistant_message).data, status=status.HTTP_200_OK)
