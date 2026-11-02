@@ -85,7 +85,8 @@ export default function Chat() {
 
   async function submit(text) {
     const value = text.trim();
-    if (!value || thinking) return;
+    // Wait for the conversation: its response would otherwise replace a question sent before it arrives.
+    if (!value || thinking || !conversation) return;
     setQuestion("");
     setError("");
     setMessages((prev) => [...prev, { role: "user", content: value, id: "temp-" + Date.now() }]);
@@ -111,7 +112,7 @@ export default function Chat() {
   }
 
   const exchanges = toExchanges(messages);
-  const empty = exchanges.length === 0 && !thinking;
+  const empty = Boolean(conversation) && exchanges.length === 0 && !thinking;
 
   return (
     <div className="app-shell chat-shell">
@@ -198,7 +199,7 @@ export default function Chat() {
               onKeyDown={onKeyDown}
               placeholder="Ask a question about this document…"
             />
-            <button className="btn primary" type="submit" disabled={thinking || !question.trim()}>
+            <button className="btn primary" type="submit" disabled={thinking || !conversation || !question.trim()}>
               Ask
             </button>
           </div>
