@@ -17,6 +17,19 @@ jobs:
       DJANGO_SETTINGS_MODULE: config.settings.dev
       SECRET_KEY: ci-insecure-key-not-used-in-production
       DEBUG: "True"
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: papermind
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -29,6 +42,10 @@ jobs:
         run: python manage.py check
       - name: Verify migrations are complete
         run: python manage.py makemigrations --check --dry-run
+      - name: Account tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/papermind
+        run: python manage.py test apps.users
 
   frontend:
     name: Frontend build
