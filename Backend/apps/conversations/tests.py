@@ -9,7 +9,7 @@ from apps.conversations.models import Conversation
 from apps.documents.models import Chunk, Document
 
 
-@override_settings(GEMINI_API_KEY="test")
+@override_settings(GEMINI_API_KEY="test", GEMINI_FALLBACK_MODELS=["models/backup"])
 class ConversationAskTests(TestCase):
     def setUp(self):
         owner = get_user_model().objects.create_user(email="ask@example.com", password="Str0ng-pass-1")

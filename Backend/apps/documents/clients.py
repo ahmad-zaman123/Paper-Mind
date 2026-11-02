@@ -17,6 +17,11 @@ _RETRY_BACKOFF_SECONDS = 2
 # call forever; with it, a stall raises and is retried.
 _REQUEST_TIMEOUT_MS = 30000
 
+# Someone is waiting on an answer, so each chat model gets a short try, and no new
+# model starts once this much of the answer's time has gone.
+_GENERATE_TIMEOUT_MS = 12000
+_GENERATE_DEADLINE_SECONDS = 20
+
 # Number of texts sent per embedding request. Batching turns N sequential
 # round-trips into ceil(N / batch) requests, which keeps ingestion fast enough
 # to run synchronously.
@@ -59,11 +64,12 @@ class GeminiClient:
         self._chat_models = list(
             dict.fromkeys(
                 _strip_model_prefix(name)
-                for name in (settings.GEMINI_CHAT_MODEL, settings.GEMINI_FALLBACK_MODEL)
+                for name in (settings.GEMINI_CHAT_MODEL, *settings.GEMINI_FALLBACK_MODELS)
                 if name
             )
         )
         self._dimensions = settings.EMBEDDING_DIMENSIONS
+        self._generate_started = None
 
     def _embed_batch(self, texts, task_type):
         config = types.EmbedContentConfig(
@@ -99,10 +105,15 @@ class GeminiClient:
     def generate_answer(self, prompt):
         """Ask each chat model in turn, since one can be over its limit while the next is not."""
 
+        if self._generate_started is None:
+            self._generate_started = time.monotonic()
+        config = types.GenerateContentConfig(http_options=types.HttpOptions(timeout=_GENERATE_TIMEOUT_MS))
         last_error = None
         for model in self._chat_models:
+            if time.monotonic() - self._generate_started >= _GENERATE_DEADLINE_SECONDS:
+                break
             try:
-                response = self._client.models.generate_content(model=model, contents=prompt)
+                response = self._client.models.generate_content(model=model, contents=prompt, config=config)
                 if response.text:
                     return response.text
                 last_error = ValueError(model + " returned an empty answer.")

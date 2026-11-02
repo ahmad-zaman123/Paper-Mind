@@ -169,7 +169,10 @@ CORS_ALLOWED_ORIGINS = env.list(
 GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
 GEMINI_EMBEDDING_MODEL = env("GEMINI_EMBEDDING_MODEL", default="models/gemini-embedding-001")
 GEMINI_CHAT_MODEL = env("GEMINI_CHAT_MODEL", default="models/gemini-2.5-flash")
-GEMINI_FALLBACK_MODEL = env("GEMINI_FALLBACK_MODEL", default="models/gemini-3.1-flash-lite")
+GEMINI_FALLBACK_MODELS = env.list(
+    "GEMINI_FALLBACK_MODELS",
+    default=["models/gemini-2.5-flash-lite", "models/gemini-3.1-flash-lite", "models/gemini-3.5-flash-lite"],
+)
 EMBEDDING_DIMENSIONS = 768
 
 # Ingestion tuning

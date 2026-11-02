@@ -134,7 +134,9 @@ class AnswerCitationTests(TestCase):
         self.assertTrue(result["citations"][0]["uncited"])
 
 
-@override_settings(GEMINI_API_KEY="test", GEMINI_CHAT_MODEL="models/first", GEMINI_FALLBACK_MODEL="models/second")
+@override_settings(
+    GEMINI_API_KEY="test", GEMINI_CHAT_MODEL="models/first", GEMINI_FALLBACK_MODELS=["models/second", "models/third"]
+)
 class GenerateAnswerTests(SimpleTestCase):
     def generate(self, *replies):
         with patch("apps.documents.clients.genai") as genai:
@@ -158,4 +160,15 @@ class GenerateAnswerTests(SimpleTestCase):
 
     def test_error_raised_when_every_model_fails(self):
         with self.assertRaises(GeminiUnavailable):
-            self.generate(RuntimeError("429"), RuntimeError("429"))
+            self.generate(RuntimeError("429"), RuntimeError("429"), RuntimeError("429"))
+        self.assertEqual(self.models, ["first", "second", "third"])
+
+    def test_models_are_tried_in_order(self):
+        self.assertEqual(self.generate(RuntimeError("429"), RuntimeError("429"), SimpleNamespace(text="Answer")), "Answer")
+        self.assertEqual(self.models, ["first", "second", "third"])
+
+    def test_no_new_model_starts_after_the_deadline(self):
+        with patch("apps.documents.clients.time.monotonic", side_effect=[0, 0, 21]):
+            with self.assertRaises(GeminiUnavailable):
+                self.generate(RuntimeError("timed out"), SimpleNamespace(text="Answer"))
+        self.assertEqual(self.models, ["first"])
