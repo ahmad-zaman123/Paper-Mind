@@ -106,6 +106,18 @@ Leave both variables empty and the button is hidden.
 </details>
 
 <details>
+<summary><b>✉️ Password reset</b> (optional, free)</summary>
+<br/>
+
+Adds **Forgot password?** to the sign-in page. It emails a link that works once and expires in 15 minutes. Using it, or changing a password from the account menu, ends the account's other sessions.
+
+Set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` and `EMAIL_FROM` on the backend, and run `python manage.py migrate` for the rate limit table. For Gmail, use `smtp.gmail.com`, port `587` and an [app password](https://myaccount.google.com/apppasswords). Links open the first address in `CORS_ALLOWED_ORIGINS`.
+
+Leave `SMTP_HOST` empty and the endpoint replies that reset isn't available.
+
+</details>
+
+<details>
 <summary><b>🔑 Demo account</b> (live site)</summary>
 <br/>
 
@@ -166,7 +178,7 @@ Interactive Swagger docs at **`/api/docs/`** ([live](https://paper-mind-backend-
 
 | Area | Endpoints |
 |---|---|
-| **Auth** | `POST /api/auth/register/`, `/auth/token/`, `/auth/token/refresh/`, `/auth/google/`, `/auth/password/`, `GET /auth/me/` |
+| **Auth** | `POST /api/auth/register/`, `/auth/token/`, `/auth/token/refresh/`, `/auth/google/`, `/auth/password/`, `/auth/password/forgot/`, `/auth/password/reset/`, `GET /auth/me/` |
 | **Documents** | `GET`, `POST /api/documents/`, `GET`, `DELETE /api/documents/<id>/` |
 | **Ask a document** | `POST /api/documents/<id>/ask/` |
 | **Conversations** | `GET`, `POST /api/conversations/`, `GET`, `DELETE /api/conversations/<id>/` |
