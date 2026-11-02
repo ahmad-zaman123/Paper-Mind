@@ -86,6 +86,7 @@ npm run dev
 | `GOOGLE_CLIENT_ID` | no | Turns on "Continue with Google" on the sign-in page. See **Google sign-in** below. |
 | `GEMINI_EMBEDDING_MODEL` | no | Defaults to `models/gemini-embedding-001`. |
 | `GEMINI_CHAT_MODEL` | no | Defaults to `models/gemini-2.5-flash`. |
+| `GEMINI_FALLBACK_MODEL` | no | Tried when the chat model fails. Defaults to `models/gemini-3.1-flash-lite`. |
 
 Frontend: `VITE_API_URL` points at the backend (default `http://127.0.0.1:8009`); `VITE_GOOGLE_CLIENT_ID` is the same Google client id, only needed for the Google button.
 

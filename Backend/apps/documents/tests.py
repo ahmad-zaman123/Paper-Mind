@@ -1,8 +1,10 @@
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase, override_settings
 
+from apps.documents.clients import GeminiClient
 from apps.documents.constants import MAX_CHUNKS_PER_DOCUMENT
 from apps.documents.handlers import _index_document, answer_question
 from apps.documents.models import Chunk, Document
@@ -130,3 +132,30 @@ class AnswerCitationTests(TestCase):
         result = self.ask("Because.", RuntimeError("model down"))
         self.assertEqual(result["answer"], "Because.")
         self.assertTrue(result["citations"][0]["uncited"])
+
+
+@override_settings(GEMINI_API_KEY="test", GEMINI_CHAT_MODEL="models/first", GEMINI_FALLBACK_MODEL="models/second")
+class GenerateAnswerTests(SimpleTestCase):
+    def generate(self, *replies):
+        with patch("apps.documents.clients.genai") as genai:
+            generate_content = genai.Client.return_value.models.generate_content
+            generate_content.side_effect = replies
+            try:
+                return GeminiClient().generate_answer("prompt")
+            finally:
+                self.models = [call.kwargs["model"] for call in generate_content.call_args_list]
+
+    def test_first_model_answers(self):
+        self.assertEqual(self.generate(SimpleNamespace(text="Answer")), "Answer")
+        self.assertEqual(self.models, ["first"])
+
+    def test_failed_model_falls_back(self):
+        self.assertEqual(self.generate(RuntimeError("429"), SimpleNamespace(text="Answer")), "Answer")
+        self.assertEqual(self.models, ["first", "second"])
+
+    def test_empty_reply_falls_back(self):
+        self.assertEqual(self.generate(SimpleNamespace(text=None), SimpleNamespace(text="Answer")), "Answer")
+
+    def test_error_raised_when_every_model_fails(self):
+        with self.assertRaises(RuntimeError):
+            self.generate(RuntimeError("429"), RuntimeError("429"))

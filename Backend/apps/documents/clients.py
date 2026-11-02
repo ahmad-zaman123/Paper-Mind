@@ -1,9 +1,12 @@
+import logging
 import math
 import time
 
 from django.conf import settings
 from google import genai
 from google.genai import types
+
+logger = logging.getLogger(__name__)
 
 _MAX_RETRIES = 3
 _RETRY_BACKOFF_SECONDS = 2
@@ -45,7 +48,13 @@ class GeminiClient:
             http_options=types.HttpOptions(timeout=_REQUEST_TIMEOUT_MS),
         )
         self._embedding_model = _strip_model_prefix(settings.GEMINI_EMBEDDING_MODEL)
-        self._chat_model = _strip_model_prefix(settings.GEMINI_CHAT_MODEL)
+        self._chat_models = list(
+            dict.fromkeys(
+                _strip_model_prefix(name)
+                for name in (settings.GEMINI_CHAT_MODEL, settings.GEMINI_FALLBACK_MODEL)
+                if name
+            )
+        )
         self._dimensions = settings.EMBEDDING_DIMENSIONS
 
     def _embed_batch(self, texts, task_type):
@@ -79,8 +88,16 @@ class GeminiClient:
         return self._embed_batch([text], "RETRIEVAL_QUERY")[0]
 
     def generate_answer(self, prompt):
-        response = self._client.models.generate_content(
-            model=self._chat_model,
-            contents=prompt,
-        )
-        return response.text
+        """Ask each chat model in turn, since one can be over its limit while the next is not."""
+
+        last_error = None
+        for model in self._chat_models:
+            try:
+                response = self._client.models.generate_content(model=model, contents=prompt)
+                if response.text:
+                    return response.text
+                last_error = ValueError(model + " returned an empty answer.")
+            except Exception as error:
+                last_error = error
+            logger.warning("Model %s failed: %s", model, last_error)
+        raise last_error
