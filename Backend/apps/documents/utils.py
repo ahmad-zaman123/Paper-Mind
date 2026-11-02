@@ -112,7 +112,7 @@ def build_rag_prompt(question, chunks, history=None):
         "Use ONLY the numbered context passages below to answer the question. "
         "If the answer cannot be found in the context, say that the document does not "
         "contain that information. Cite the passages you rely on using their bracketed "
-        "numbers, for example [1] or [2].\n\n"
+        "numbers, for example [1] or [2]. Write plain text, without Markdown formatting.\n\n"
         "Context:\n" + context + "\n\n"
         + history_block
         + "Question: " + question + "\n\n"

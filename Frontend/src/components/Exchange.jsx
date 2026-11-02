@@ -16,11 +16,50 @@ function citedNumbers(text, citations) {
   return citations.map((_, i) => i + 1).filter((n) => used.has(n));
 }
 
+const BULLET = /^\s*[*-]\s+/;
+
+/** Split an answer into paragraphs and bullet lists. The model sometimes writes Markdown despite the prompt. */
+function toBlocks(text) {
+  const blocks = [];
+  for (const line of String(text || "").replace(/\*\*(.+?)\*\*/g, "$1").split("\n")) {
+    const last = blocks[blocks.length - 1];
+    if (BULLET.test(line)) {
+      const item = line.replace(BULLET, "");
+      if (last?.items) last.items.push(item);
+      else blocks.push({ items: [item] });
+    } else if (last && !last.items) {
+      last.text += "\n" + line;
+    } else if (line.trim()) {
+      blocks.push({ text: line });
+    }
+  }
+  return blocks;
+}
+
 /** The answer text with each [n] marker turned into keys that point at their margin notes. */
 function AnswerText({ text, citations, activeKey, onKey }) {
-  const parts = String(text || "").split(MARKER);
+  const shared = { citations, activeKey, onKey };
+  return toBlocks(text).map((block, i) =>
+    block.items ? (
+      <ul key={i} className="answer answer-list">
+        {block.items.map((item, j) => (
+          <li key={j}>
+            <Marked text={item} {...shared} />
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p key={i} className="answer">
+        <Marked text={block.text.trimEnd()} {...shared} />
+      </p>
+    )
+  );
+}
+
+function Marked({ text, citations, activeKey, onKey }) {
+  const parts = text.split(MARKER);
   return (
-    <p className="answer">
+    <>
       {parts.map((part, i) => {
         if (!part.startsWith("[")) return part;
         const numbers = part
@@ -43,7 +82,7 @@ function AnswerText({ text, citations, activeKey, onKey }) {
           </button>
         ));
       })}
-    </p>
+    </>
   );
 }
 
