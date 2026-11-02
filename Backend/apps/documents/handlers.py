@@ -6,7 +6,7 @@ from pgvector.django import CosineDistance
 from apps.documents.choices import DocumentStatus
 from apps.documents.clients import GeminiClient
 from apps.documents.models import Chunk, Document
-from apps.documents.utils import build_rag_prompt, chunk_text, extract_content
+from apps.documents.utils import build_rag_prompt, chunk_pages, extract_content
 
 
 def create_document(*, owner, uploaded_file, title):
@@ -39,16 +39,16 @@ def _index_document(document, file_bytes):
         if not content.text:
             raise ValueError("No extractable text found — the file may be scanned images.")
 
-        chunks = chunk_text(content.text)
+        chunks = chunk_pages(content.pages)
         if not chunks:
             raise ValueError("The document produced no text chunks to index.")
 
-        embeddings = GeminiClient().embed_documents(chunks)
+        embeddings = GeminiClient().embed_documents([piece for _, piece in chunks])
         with transaction.atomic():
             Chunk.objects.bulk_create(
                 [
-                    Chunk(document=document, content=piece, embedding=vector, chunk_index=index)
-                    for index, (piece, vector) in enumerate(zip(chunks, embeddings))
+                    Chunk(document=document, content=piece, page=page, embedding=vector, chunk_index=index)
+                    for index, ((page, piece), vector) in enumerate(zip(chunks, embeddings))
                 ]
             )
             document.extracted_text = content.text

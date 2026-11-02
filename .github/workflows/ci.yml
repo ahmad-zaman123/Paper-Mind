@@ -42,10 +42,10 @@ jobs:
         run: python manage.py check
       - name: Verify migrations are complete
         run: python manage.py makemigrations --check --dry-run
-      - name: Account tests
+      - name: Backend tests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/papermind
-        run: python manage.py test apps.users
+        run: python manage.py test apps.users apps.documents
 
   frontend:
     name: Frontend build

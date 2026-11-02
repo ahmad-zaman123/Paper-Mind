@@ -11,6 +11,8 @@ from apps.documents.constants import MAX_CHUNKS_PER_DOCUMENT
 class ExtractedContent:
     text: str
     page_count: int
+    # (page number, text) pairs. Formats without real pages use page 0.
+    pages: list
 
 
 def _extract_pdf(uploaded_file):
@@ -18,7 +20,8 @@ def _extract_pdf(uploaded_file):
     reader = PdfReader(uploaded_file)
     parts = [(page.extract_text() or "") for page in reader.pages]
     text = "\n\n".join(parts).strip()
-    return ExtractedContent(text=text, page_count=len(reader.pages))
+    pages = [(number, part) for number, part in enumerate(parts, 1)]
+    return ExtractedContent(text=text, page_count=len(reader.pages), pages=pages)
 
 
 def _extract_docx(uploaded_file):
@@ -27,13 +30,13 @@ def _extract_docx(uploaded_file):
     parts = [paragraph.text for paragraph in document.paragraphs if paragraph.text.strip()]
     text = "\n".join(parts).strip()
     # Word documents have no reliable page markers, so page count is left as 1.
-    return ExtractedContent(text=text, page_count=1)
+    return ExtractedContent(text=text, page_count=1, pages=[(0, text)])
 
 
 def _extract_plain_text(uploaded_file):
     uploaded_file.seek(0)
     text = uploaded_file.read().decode("utf-8", errors="replace").strip()
-    return ExtractedContent(text=text, page_count=1)
+    return ExtractedContent(text=text, page_count=1, pages=[(0, text)])
 
 
 def extract_content(uploaded_file):
@@ -80,6 +83,15 @@ def chunk_text(text, chunk_size=None, overlap=None):
                 start = space + 1
 
     return chunks
+
+
+def chunk_pages(pages):
+    """Chunk each page on its own, so every passage can cite the one page it came from."""
+
+    chunks = []
+    for number, text in pages:
+        chunks.extend((number, piece) for piece in chunk_text(text))
+    return chunks[:MAX_CHUNKS_PER_DOCUMENT]
 
 
 def build_rag_prompt(question, chunks, history=None):
