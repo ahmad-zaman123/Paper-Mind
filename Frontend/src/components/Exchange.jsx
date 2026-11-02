@@ -7,6 +7,15 @@ function reducedMotion() {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+/** The citation numbers an answer actually uses, in the order of the margin notes. */
+function citedNumbers(text, citations) {
+  const used = new Set();
+  for (const marker of String(text || "").match(MARKER) || []) {
+    for (const value of marker.slice(1, -1).split(",")) used.add(Number(value.trim()));
+  }
+  return citations.map((_, i) => i + 1).filter((n) => used.has(n));
+}
+
 /** The answer text with each [n] marker turned into keys that point at their margin notes. */
 function AnswerText({ text, citations, activeKey, onKey }) {
   const parts = String(text || "").split(MARKER);
@@ -73,7 +82,9 @@ export default function Exchange({ question, content, citations = [] }) {
   const uid = useId();
   const [activeKey, setActiveKey] = useState(null);
   const [openNotes, setOpenNotes] = useState({});
-  const hasNotes = citations.length > 0;
+  // Retrieval always returns its nearest passages; only the ones the answer relies on are its sources.
+  const cited = citedNumbers(content, citations);
+  const hasNotes = cited.length > 0;
 
   function onKey(n) {
     const next = activeKey === n ? null : n;
@@ -94,15 +105,15 @@ export default function Exchange({ question, content, citations = [] }) {
       <div className="exchange-rail" aria-hidden="true" />
       {hasNotes && (
         <aside className="exchange-margin" aria-label="Sources for this answer">
-          {citations.map((c, i) => (
+          {cited.map((n) => (
             <Note
-              key={i}
-              id={uid + "-note-" + (i + 1)}
-              n={i + 1}
-              citation={c}
-              active={activeKey === i + 1}
-              open={Boolean(openNotes[i + 1])}
-              onToggle={() => setOpenNotes((prev) => ({ ...prev, [i + 1]: !prev[i + 1] }))}
+              key={n}
+              id={uid + "-note-" + n}
+              n={n}
+              citation={citations[n - 1]}
+              active={activeKey === n}
+              open={Boolean(openNotes[n])}
+              onToggle={() => setOpenNotes((prev) => ({ ...prev, [n]: !prev[n] }))}
             />
           ))}
         </aside>
