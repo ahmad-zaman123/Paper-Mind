@@ -122,7 +122,8 @@ export default function Exchange({ question, content, citations = [] }) {
   const [activeKey, setActiveKey] = useState(null);
   const [openNotes, setOpenNotes] = useState({});
   // Retrieval always returns its nearest passages; only the ones the answer relies on are its sources.
-  const cited = citedNumbers(content, citations);
+  const uncited = Boolean(citations[0]?.uncited);
+  const cited = uncited ? [1] : citedNumbers(content, citations);
   const hasNotes = cited.length > 0;
 
   function onKey(n) {
@@ -144,6 +145,7 @@ export default function Exchange({ question, content, citations = [] }) {
       <div className="exchange-rail" aria-hidden="true" />
       {hasNotes && (
         <aside className="exchange-margin" aria-label="Sources for this answer">
+          {uncited && <p className="note-uncited">This answer didn't cite a passage. Closest passage:</p>}
           {cited.map((n) => (
             <Note
               key={n}

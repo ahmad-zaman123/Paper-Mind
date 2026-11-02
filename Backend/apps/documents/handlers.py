@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
@@ -6,7 +8,16 @@ from pgvector.django import CosineDistance
 from apps.documents.choices import DocumentStatus
 from apps.documents.clients import GeminiClient
 from apps.documents.models import Chunk, Document
-from apps.documents.utils import build_rag_prompt, chunk_pages, extract_content
+from apps.documents.utils import (
+    CITATION_REMINDER,
+    build_rag_prompt,
+    chunk_pages,
+    extract_content,
+    has_citation,
+    says_not_found,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def create_document(*, owner, uploaded_file, title):
@@ -72,6 +83,20 @@ def _citation_page(chunk, document):
     return chunk.page
 
 
+def _generate_cited_answer(client, prompt, passage_count):
+    """Generate an answer, asking once more if it neither cites a passage nor says it can't answer."""
+
+    answer = client.generate_answer(prompt)
+    if has_citation(answer, passage_count) or says_not_found(answer):
+        return answer
+    try:
+        return client.generate_answer(prompt + CITATION_REMINDER) or answer
+    except Exception:
+        # The first answer is still usable, and it is shown as uncited.
+        logger.warning("Retrying an uncited answer failed.", exc_info=True)
+        return answer
+
+
 def answer_question(*, document, question, history=None):
     """Answer a question about a document using retrieval-augmented generation.
 
@@ -95,7 +120,7 @@ def answer_question(*, document, question, history=None):
         }
 
     prompt = build_rag_prompt(question, chunks, history=history)
-    answer = client.generate_answer(prompt)
+    answer = _generate_cited_answer(client, prompt, len(chunks))
 
     citations = [
         {
@@ -106,4 +131,8 @@ def answer_question(*, document, question, history=None):
         }
         for chunk in chunks
     ]
+    if not has_citation(answer, len(chunks)):
+        # "Not in the document" has no sources. Any other uncited answer gets the closest
+        # passage, marked so the page can say the model did not cite it.
+        citations = [] if says_not_found(answer) else [{**citations[0], "uncited": True}]
     return {"answer": answer, "citations": citations}

@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 
 from django.conf import settings
@@ -5,6 +6,14 @@ from docx import Document as DocxDocument
 from pypdf import PdfReader
 
 from apps.documents.constants import MAX_CHUNKS_PER_DOCUMENT
+
+CITATION_MARKER = re.compile(r"\[(\d+(?:\s*,\s*\d+)*)\]")
+NOT_FOUND_PHRASE = "does not contain that information"
+CITATION_REMINDER = (
+    "\n\nYour previous answer cited no passages. Answer again, citing each passage you rely on "
+    "by its bracketed number. If the passages do not answer the question, say only that the "
+    "document " + NOT_FOUND_PHRASE + "."
+)
 
 
 @dataclass
@@ -94,6 +103,19 @@ def chunk_pages(pages):
     return chunks[:MAX_CHUNKS_PER_DOCUMENT]
 
 
+def has_citation(answer, passage_count):
+    """Whether the answer cites at least one of the passages it was given."""
+
+    for marker in CITATION_MARKER.findall(answer or ""):
+        if any(1 <= int(number) <= passage_count for number in marker.split(",")):
+            return True
+    return False
+
+
+def says_not_found(answer):
+    return NOT_FOUND_PHRASE in (answer or "").lower()
+
+
 def build_rag_prompt(question, chunks, history=None):
     """Build a grounded prompt from retrieved chunks, prior turns, and the question."""
 
@@ -110,8 +132,8 @@ def build_rag_prompt(question, chunks, history=None):
     prompt = (
         "You are a helpful assistant that answers questions about a single document. "
         "Use ONLY the numbered context passages below to answer the question. "
-        "If the answer cannot be found in the context, say that the document does not "
-        "contain that information. Cite the passages you rely on using their bracketed "
+        "If the answer cannot be found in the context, say that the document " + NOT_FOUND_PHRASE + ". "
+        "Cite the passages you rely on using their bracketed "
         "numbers, for example [1] or [2]. Write plain text, without Markdown formatting.\n\n"
         "Context:\n" + context + "\n\n"
         + history_block

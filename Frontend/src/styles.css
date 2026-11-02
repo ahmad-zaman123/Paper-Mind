@@ -257,6 +257,7 @@ button { font: inherit; }
 .exchange.no-notes .exchange-rail::before { display: none; }
 
 .note { font-size: 0.9rem; line-height: 1.5; }
+.note-uncited { margin: 0; color: var(--muted); font-size: 0.85rem; line-height: 1.45; }
 .note-head { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.25rem; font-weight: 600; }
 .note-key { color: var(--rubric); font-weight: 700; }
 .note-meta { color: var(--muted); font-weight: 500; font-size: 0.82rem; }

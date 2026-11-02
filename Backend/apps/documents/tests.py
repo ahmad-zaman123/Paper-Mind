@@ -71,3 +71,62 @@ class CitationPageTests(TestCase):
 
     def test_stored_page_is_kept(self):
         self.assertEqual(self.cited_page("doc.pdf", 3, 2), 2)
+
+
+class AnswerCitationTests(TestCase):
+    def ask(self, *answers):
+        owner = get_user_model().objects.create_user(email="answers@example.com", password="Str0ng-pass-1")
+        document = Document.objects.create(owner=owner, title="Doc", filename="doc.pdf", status="ready")
+        for index, vector in enumerate(([1.0] + [0.0] * 767, [0.0] * 767 + [1.0])):
+            Chunk.objects.create(
+                document=document, content="passage " + str(index), page=index + 1, embedding=vector, chunk_index=index
+            )
+        with patch("apps.documents.handlers.GeminiClient") as client:
+            client.return_value.embed_query.return_value = [1.0] + [0.0] * 767
+            client.return_value.generate_answer.side_effect = answers
+            result = answer_question(document=document, question="Why?")
+            self.prompts = [call.args[0] for call in client.return_value.generate_answer.call_args_list]
+        return result
+
+    def test_cited_answer_is_not_retried_and_keeps_its_passages(self):
+        result = self.ask("Because [1].")
+        self.assertEqual(len(self.prompts), 1)
+        self.assertEqual(len(result["citations"]), 2)
+        self.assertNotIn("uncited", result["citations"][0])
+
+    def test_grouped_citation_counts(self):
+        self.assertEqual(len(self.ask("Because [1, 2].")["citations"]), 2)
+        self.assertEqual(len(self.prompts), 1)
+
+    def test_not_found_answer_is_not_retried_and_has_no_sources(self):
+        result = self.ask("The document does not contain that information.")
+        self.assertEqual(len(self.prompts), 1)
+        self.assertEqual(result["citations"], [])
+
+    def test_uncited_answer_is_retried_with_a_reminder(self):
+        result = self.ask("Because.", "Because [2].")
+        self.assertEqual(len(self.prompts), 2)
+        self.assertIn("cited no passages", self.prompts[1])
+        self.assertEqual(result["answer"], "Because [2].")
+        self.assertEqual(len(result["citations"]), 2)
+
+    def test_retry_can_end_in_not_found(self):
+        result = self.ask("Because.", "The document does not contain that information.")
+        self.assertEqual(result["citations"], [])
+
+    def test_still_uncited_answer_gets_the_closest_passage_marked_uncited(self):
+        result = self.ask("Because.", "Still because.")
+        self.assertEqual(result["answer"], "Still because.")
+        self.assertEqual(len(result["citations"]), 1)
+        self.assertTrue(result["citations"][0]["uncited"])
+        self.assertEqual(result["citations"][0]["content"], "passage 0")
+
+    def test_marker_outside_the_passages_does_not_count(self):
+        result = self.ask("Because [9].", "Still [9].")
+        self.assertEqual(len(self.prompts), 2)
+        self.assertTrue(result["citations"][0]["uncited"])
+
+    def test_failed_retry_keeps_the_first_answer(self):
+        result = self.ask("Because.", RuntimeError("model down"))
+        self.assertEqual(result["answer"], "Because.")
+        self.assertTrue(result["citations"][0]["uncited"])
