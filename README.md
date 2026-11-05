@@ -15,6 +15,11 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT license" /></a>
 </p>
 
+<p align="center">
+  <a href="https://paper-mind-sage.vercel.app"><b>Live demo → paper-mind-sage.vercel.app</b></a><br/>
+  <sub>Click <b>Try the live demo</b> to open a shared account with a document and saved chats, then upload your own file and ask it questions. No sign-up needed.</sub>
+</p>
+
 https://github.com/user-attachments/assets/2c017b05-63d0-4464-a11d-207a76747c8f
 
 <p align="center">
@@ -22,6 +27,7 @@ https://github.com/user-attachments/assets/2c017b05-63d0-4464-a11d-207a76747c8f
   <a href="#-how-it-works">How it works</a> ·
   <a href="#-features">Features</a> ·
   <a href="#-api">API</a> ·
+  <a href="#-limits">Limits</a> ·
   <a href="#-deployment--ci">Deployment</a>
 </p>
 
@@ -203,6 +209,17 @@ Interactive Swagger docs at **`/api/docs/`** ([live](https://paper-mind-backend-
 | **Ask a document** | `POST /api/documents/<id>/ask/` |
 | **Conversations** | `GET`, `POST /api/conversations/`, `GET`, `DELETE /api/conversations/<id>/` |
 | **Ask in a conversation** | `POST /api/conversations/<id>/ask/` |
+
+## 🚦 Limits
+
+| Action | Limit |
+|---|---|
+| Uploads | PDF, Word, text or Markdown, up to 10 MB |
+| Indexing | The first 400 passages of a document, about 280,000 characters |
+| Questions | 3 to 1,000 characters |
+| Reset emails | 10 per hour per IP address, 3 per hour per email address, 100 per day overall |
+
+The live demo runs on Gemini's free tier, which caps how many requests each model answers a day. When the chat model reaches its cap, Paper-Mind tries the fallback models in order. If they're all at their cap, it says the AI service is busy and to try again later.
 
 ## 🛠️ Tech stack
 
