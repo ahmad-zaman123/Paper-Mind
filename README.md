@@ -25,10 +25,6 @@ https://github.com/user-attachments/assets/2c017b05-63d0-4464-a11d-207a76747c8f
   <a href="#-deployment--ci">Deployment</a>
 </p>
 
-<p align="center">
-  <img src="docs/screenshots/chat.png" alt="Paper-Mind answering a question with citations" width="860" />
-</p>
-
 ---
 
 ## 🧭 What is Paper-Mind?
@@ -38,6 +34,10 @@ A retrieval-augmented generation (RAG) app for question answering over your own 
 | 📤 Upload | 💬 Ask | 🔎 Verify |
 |---|---|---|
 | PDF, Word, text or Markdown up to 10 MB, extracted and indexed automatically | Natural-language questions, with follow-ups that remember the conversation | Every answer cites the exact passages and similarity scores behind it |
+
+<p align="center">
+  <img src="docs/screenshots/chat.png" alt="Paper-Mind answering a question with citations" width="860" />
+</p>
 
 ## 🚀 Quick start
 
