@@ -17,7 +17,7 @@
 
 <p align="center">
   <a href="https://paper-mind-sage.vercel.app"><b>Live demo → paper-mind-sage.vercel.app</b></a><br/>
-  <sub>Click <b>Try the live demo</b> to open a shared account with a document and saved chats, then upload your own file and ask it questions. No sign-up needed.</sub>
+  <sub>Click <b>Try the live demo</b> to get your own private account with a document and saved chats, then upload your own file and ask it questions. No sign-up needed.</sub>
 </p>
 
 https://github.com/user-attachments/assets/2c017b05-63d0-4464-a11d-207a76747c8f
@@ -130,10 +130,14 @@ Leave `SMTP_HOST` empty and the endpoint replies that reset isn't available.
 </details>
 
 <details>
-<summary><b>🔑 Demo account</b> (live site)</summary>
+<summary><b>🔑 Live demo</b> (live site)</summary>
 <br/>
 
-Sign in with **`demo@paper-mind.app`** / **`demo1234`**. It comes pre-loaded with a document and a chat, so you can ask a question and see a cited answer straight away. The account is shared, so don't upload anything private to it; register your own to try your files.
+Click **Try the live demo** on the home or sign-in page. `POST /api/auth/demo/` creates a fresh account just for you and copies in the sample document and its chats, so you can ask a question and see a cited answer straight away. Nobody else sees what you upload or ask.
+
+- The copy includes the stored embeddings, so starting a demo makes no Gemini calls.
+- The sample comes from a template account, `demo@paper-mind.app`. Nobody can sign in to it, so visitors can't change what everyone else gets.
+- Demo accounts can't set a password or get reset emails, and each one is deleted after two days. Old ones are cleaned up whenever a new demo starts, so no cron job is needed.
 
 </details>
 
@@ -200,11 +204,11 @@ JWT authentication, and each user only sees their own documents.
 
 ## 🔌 API
 
-Interactive Swagger docs at **`/api/docs/`** ([live](https://paper-mind-backend-olive.vercel.app/api/docs/)), JSON schema at `/api/schema/`. Everything needs a JWT except registration and login.
+Interactive Swagger docs at **`/api/docs/`** ([live](https://paper-mind-backend-olive.vercel.app/api/docs/)), JSON schema at `/api/schema/`. Everything needs a JWT except registration, login and starting a demo.
 
 | Area | Endpoints |
 |---|---|
-| **Auth** | `POST /api/auth/register/`, `/auth/token/`, `/auth/token/refresh/`, `/auth/google/`, `/auth/password/`, `/auth/password/forgot/`, `/auth/password/reset/`, `GET /auth/me/` |
+| **Auth** | `POST /api/auth/register/`, `/auth/demo/`, `/auth/token/`, `/auth/token/refresh/`, `/auth/google/`, `/auth/password/`, `/auth/password/forgot/`, `/auth/password/reset/`, `GET /auth/me/` |
 | **Documents** | `GET`, `POST /api/documents/`, `GET`, `DELETE /api/documents/<id>/` |
 | **Ask a document** | `POST /api/documents/<id>/ask/` |
 | **Conversations** | `GET`, `POST /api/conversations/`, `GET`, `DELETE /api/conversations/<id>/` |
@@ -218,6 +222,7 @@ Interactive Swagger docs at **`/api/docs/`** ([live](https://paper-mind-backend-
 | Indexing | The first 400 passages of a document, about 280,000 characters |
 | Questions | 3 to 1,000 characters |
 | Reset emails | 10 per hour per IP address, 3 per hour per email address, 100 per day overall |
+| Demo accounts | 10 per hour per IP address, 500 per day overall |
 
 The live demo runs on Gemini's free tier, which caps how many requests each model answers a day. When the chat model reaches its cap, Paper-Mind tries the fallback models in order. If they're all at their cap, it says the AI service is busy and to try again later.
 

@@ -8,7 +8,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework.test import APIClient
 
-from apps.users.constants import DEMO_EMAIL, DEMO_PASSWORD_LOCKED, RESET_INVALID, RESET_LIMITS, RESET_SENT
+from apps.users.constants import DEMO_EMAIL, DEMO_TEMPLATE_LOCKED, RESET_INVALID, RESET_LIMITS, RESET_SENT
 from apps.users.emails import sender_address
 from apps.users.models import RateWindow, User
 
@@ -156,21 +156,12 @@ class PasswordResetTests(TestCase):
     def test_unconfigured_server_says_so(self):
         self.assertEqual(self.forgot().status_code, 503)
 
-    def test_demo_password_cannot_be_changed(self):
+    def test_demo_template_cannot_be_signed_into(self):
         User.objects.create_user(email=DEMO_EMAIL, password="demo1234")
-        access = self.client.post(
-            "/api/auth/token/", {"email": DEMO_EMAIL, "password": "demo1234"}, format="json"
-        ).json()["access"]
-        response = self.client.post(
-            "/api/auth/password/",
-            {"current_password": "demo1234", "new_password": NEW_PASSWORD},
-            format="json",
-            HTTP_AUTHORIZATION=f"Bearer {access}",
-        )
+        response = self.client.post("/api/auth/token/", {"email": DEMO_EMAIL, "password": "demo1234"}, format="json")
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()["detail"], [DEMO_PASSWORD_LOCKED])
-        self.assertTrue(User.objects.get(email=DEMO_EMAIL).check_password("demo1234"))
-        self.assertEqual(self.me(access).status_code, 200)
+        self.assertEqual(response.json()["detail"], [DEMO_TEMPLATE_LOCKED])
+        self.assertEqual(self.sign_in().status_code, 200)
 
     def test_change_password_ends_old_sessions_but_returns_a_new_one(self):
         old = self.sign_in().json()

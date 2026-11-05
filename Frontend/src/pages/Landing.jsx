@@ -1,4 +1,7 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+import { api } from "../api.js";
 
 import Brand from "../components/Brand.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
@@ -26,6 +29,22 @@ const EXAMPLE = {
 };
 
 export default function Landing() {
+  const navigate = useNavigate();
+  const [demoBusy, setDemoBusy] = useState(false);
+  const [demoError, setDemoError] = useState("");
+
+  async function startDemo() {
+    setDemoError("");
+    setDemoBusy(true);
+    try {
+      await api.startDemo();
+      navigate("/", { replace: true });
+    } catch (err) {
+      setDemoError(err.message || "Could not start the demo. Please try again.");
+      setDemoBusy(false);
+    }
+  }
+
   return (
     <div className="landing">
       <header className="landing-nav">
@@ -49,10 +68,15 @@ export default function Landing() {
             <Link to="/login" state={{ register: true }} className="btn primary">
               Get started — it&apos;s free
             </Link>
-            <Link to="/login" state={{ demo: true }} className="btn outline">
-              Try the live demo
-            </Link>
+            <button type="button" className="btn outline" onClick={startDemo} disabled={demoBusy}>
+              {demoBusy ? "Setting up your demo…" : "Try the live demo"}
+            </button>
           </div>
+          {demoError && (
+            <div className="error-banner" role="alert" style={{ marginTop: "0.8rem" }}>
+              {demoError}
+            </div>
+          )}
 
           <dl className="landing-steps">
             <div>
