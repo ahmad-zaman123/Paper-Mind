@@ -36,7 +36,10 @@ A retrieval-augmented generation (RAG) app for question answering over your own 
 | PDF, Word, text or Markdown up to 10 MB, extracted and indexed automatically | Natural-language questions, with follow-ups that remember the conversation | Every answer cites the exact passages and similarity scores behind it |
 
 <p align="center">
-  <img src="docs/screenshots/chat.png" alt="Paper-Mind answering a question with citations" width="860" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/chat-dark.png" />
+    <img src="docs/screenshots/chat.png" alt="Paper-Mind answering a question, with the cited passage opened beside the answer" width="860" />
+  </picture>
 </p>
 
 ## 🚀 Quick start
@@ -147,6 +150,13 @@ Sign in with **`demo@paper-mind.app`** / **`demo1234`**. It comes pre-loaded wit
 | Embeddings | `gemini-embedding-001`, 768 dimensions |
 | Answers | `gemini-2.5-flash`, grounded in the retrieved chunks and prior turns |
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/follow-up-dark.png" />
+    <img src="docs/screenshots/follow-up.png" alt="A follow-up question answered from the same document, each claim linked to the passages and match scores behind it" width="860" />
+  </picture>
+</p>
+
 ## ✨ Features
 
 <table>
@@ -174,6 +184,13 @@ JWT authentication, and each user only sees their own documents.
 </td>
 </tr>
 </table>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/library-dark.png" />
+    <img src="docs/screenshots/library.png" alt="The library: uploaded documents with their status and page count, and past conversations" width="860" />
+  </picture>
+</p>
 
 ## 🔌 API
 
