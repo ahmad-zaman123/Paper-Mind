@@ -134,7 +134,7 @@ export default function Chat() {
         <div className="sheet">
           {empty && (
             <div className="starter">
-              <h2>Ask this document anything</h2>
+              <h2>Ask this document anything.</h2>
               <p>Answers cite the passages they come from, so you can check them against the page.</p>
               <ul className="starter-list">
                 {STARTERS.map((s) => (
