@@ -249,7 +249,7 @@ Paper-Mind/
 ## ☁️ Deployment & CI
 
 - **Vercel** for the backend (`Backend/api/index.py`) and frontend, with **Neon** Postgres (enable pgvector and use the pooled URL).
-- **CI** (`ci.yml`) runs `manage.py check`, a missing-migrations check and the frontend build on every push and pull request.
+- **CI** (`ci.yml`) runs `manage.py check`, a missing-migrations check, the backend tests against a real Postgres with pgvector and the frontend build on every push and pull request.
 
 ## 📄 License
 
