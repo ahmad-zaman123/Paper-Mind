@@ -59,7 +59,7 @@ export default function Landing() {
 
       <main className="landing-main">
         <div>
-          <h1 className="landing-title">Chat with your documents</h1>
+          <h1 className="landing-title">Answers you can check, from your own documents</h1>
           <p className="landing-lede">
             Upload a PDF, ask questions in plain English, and get answers grounded in the document,
             with citations back to the exact passages.
