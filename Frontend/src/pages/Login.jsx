@@ -102,7 +102,7 @@ export default function Login() {
       </header>
       <div className="auth-screen">
         <form className="auth-card" onSubmit={handleSubmit}>
-          <h1>{isRegister ? "Create your library." : "Back to your documents."}</h1>
+          <h1>{isRegister ? "Create your library" : "Back to your documents"}</h1>
           <p className="auth-subtitle">
             {isRegister
               ? "Upload a document and ask it questions. Every answer cites its source."

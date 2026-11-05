@@ -198,7 +198,7 @@ export default function Dashboard() {
                   <span className="index-title">{doc.title}</span>
                   <div className="index-actions">
                     <button
-                      className="btn primary small"
+                      className="btn outline small"
                       disabled={doc.status !== "ready"}
                       onClick={() => startChat(doc.id)}
                     >
