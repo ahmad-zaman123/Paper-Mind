@@ -20,7 +20,7 @@
   <sub>Click <b>Try the live demo</b> to get your own private account with a document and saved chats, then upload your own file and ask it questions. No sign-up needed.</sub>
 </p>
 
-https://github.com/user-attachments/assets/2c017b05-63d0-4464-a11d-207a76747c8f
+https://github.com/user-attachments/assets/86663c2f-68c5-417a-9343-4d2a305870d4
 
 <p align="center">
   <a href="#-quick-start">Quick start</a> ·
