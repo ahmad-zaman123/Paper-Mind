@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from apps.documents.choices import DocumentStatus
 from apps.documents.handlers import answer_question
+from apps.documents.limits import spend
 from apps.documents.models import Document
 from apps.documents.serializers import (
     AnswerSerializer,
@@ -29,6 +30,12 @@ class DocumentListCreateAPIView(generics.ListCreateAPIView):
         if self.request.method == "POST":
             return DocumentUploadSerializer
         return DocumentSerializer
+
+    def create(self, request, *args, **kwargs):
+        # Reading a document embeds its text with Gemini.
+        self.get_serializer(data=request.data).is_valid(raise_exception=True)
+        spend("upload", request)
+        return super().create(request, *args, **kwargs)
 
 
 class DocumentDetailAPIView(generics.RetrieveDestroyAPIView):
@@ -57,6 +64,7 @@ class DocumentAskAPIView(generics.GenericAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        spend("ask", request)
 
         result = answer_question(
             document=document,
