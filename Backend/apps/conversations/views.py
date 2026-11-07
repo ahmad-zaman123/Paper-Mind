@@ -14,6 +14,7 @@ from apps.conversations.serializers import (
 )
 from apps.documents.choices import DocumentStatus
 from apps.documents.handlers import answer_question
+from apps.documents.limits import spend
 from apps.documents.serializers import AskSerializer
 
 
@@ -62,6 +63,7 @@ class ConversationAskAPIView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         question = serializer.validated_data["question"]
+        spend("ask", request)
 
         recent = list(conversation.messages.order_by("-created")[:HISTORY_WINDOW])[::-1]
         history = [{"role": message.role, "content": message.content} for message in recent]

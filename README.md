@@ -91,7 +91,7 @@ npm run dev
 |---|---|---|
 | `GEMINI_API_KEY` | **yes** (for AI) | From [aistudio.google.com](https://aistudio.google.com). |
 | `DATABASE_URL` | **yes** (for Q&A) | Postgres with pgvector. Unset falls back to SQLite. |
-| `SECRET_KEY` | prod | Django secret key. `.env.example` ships an insecure dev default. |
+| `SECRET_KEY` | **yes** (prod) | Django secret key, which also signs login tokens. Production refuses to start without a random value of 40+ characters. Make one with `python -c "import secrets; print(secrets.token_urlsafe(50))"`. |
 | `DEBUG` | no | `True` for local dev. |
 | `CORS_ALLOWED_ORIGINS` | no | Frontend origins allowed to call the API. Defaults to the local Vite server. |
 | `GOOGLE_CLIENT_ID` | no | Turns on "Continue with Google" on the sign-in page. See **Google sign-in** below. |
@@ -218,13 +218,15 @@ Interactive Swagger docs at **`/api/docs/`** ([live](https://paper-mind-backend-
 
 | Action | Limit |
 |---|---|
-| Uploads | PDF, Word, text or Markdown, up to 10 MB |
+| Uploads | PDF, Word, text or Markdown, up to 10 MB and 300 PDF pages |
+| Uploads per person | 10 per hour per account, 25 per day per IP address, 200 per day overall |
 | Indexing | The first 400 passages of a document, about 280,000 characters |
 | Questions | 3 to 1,000 characters |
+| Questions per person | 10 per hour and 25 per day per account, 40 per day per IP address, 60 per day overall |
 | Reset emails | 10 per hour per IP address, 3 per hour per email address, 100 per day overall |
 | Demo accounts | 10 per hour per IP address, 500 per day overall |
 
-The live demo runs on Gemini's free tier, which caps how many requests each model answers a day. When the chat model reaches its cap, Paper-Mind tries the fallback models in order. If they're all at their cap, it says the AI service is busy and to try again later.
+The live demo runs on Gemini's free tier, which caps how many requests each model answers a day. When the chat model reaches its cap, Paper-Mind tries the fallback models in order. If they're all at their cap, it says the AI service is busy and to try again later. The per-person limits above keep one visitor, or a run of fresh demo accounts from one address, from using up the day's share for everyone else.
 
 ## 🛠️ Tech stack
 

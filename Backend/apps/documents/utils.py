@@ -5,7 +5,7 @@ from django.conf import settings
 from docx import Document as DocxDocument
 from pypdf import PdfReader
 
-from apps.documents.constants import MAX_CHUNKS_PER_DOCUMENT
+from apps.documents.constants import MAX_CHUNKS_PER_DOCUMENT, MAX_PDF_PAGES
 
 CITATION_MARKER = re.compile(r"\[(\d+(?:\s*,\s*\d+)*)\]")
 NOT_FOUND_PHRASE = "does not contain that information"
@@ -27,6 +27,8 @@ class ExtractedContent:
 def _extract_pdf(uploaded_file):
     uploaded_file.seek(0)
     reader = PdfReader(uploaded_file)
+    if len(reader.pages) > MAX_PDF_PAGES:
+        raise ValueError(f"This PDF has more than {MAX_PDF_PAGES} pages. Please upload a shorter document.")
     parts = [(page.extract_text() or "") for page in reader.pages]
     text = "\n\n".join(parts).strip()
     pages = [(number, part) for number, part in enumerate(parts, 1)]
