@@ -53,8 +53,9 @@ export default function Chat() {
     loadUser();
   }, []);
 
-  function logout() {
-    clearSession();
+  // Wait for the server to clear the cookies, so closing the tab right away can't leave the session alive.
+  async function logout() {
+    await clearSession();
     navigate("/login");
   }
 
