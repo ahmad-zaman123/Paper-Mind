@@ -28,8 +28,8 @@
   ],
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://paper-mind-backend-olive.vercel.app/api/:path*"
+      "source": "/api/(.*)",
+      "destination": "https://paper-mind-backend-olive.vercel.app/api/$1"
     },
     {
       "source": "/(.*)",
