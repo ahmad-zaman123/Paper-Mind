@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { api, clearTokens } from "../api.js";
+import { api, clearSession } from "../api.js";
 import Brand from "../components/Brand.jsx";
 import Exchange from "../components/Exchange.jsx";
 import ProfileMenu from "../components/ProfileMenu.jsx";
@@ -54,7 +54,7 @@ export default function Chat() {
   }, []);
 
   function logout() {
-    clearTokens();
+    clearSession();
     navigate("/login");
   }
 

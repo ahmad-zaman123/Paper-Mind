@@ -1,26 +1,43 @@
-// Strip any trailing slash so paths never produce a double slash (which
-// triggers a redirect that browsers refuse to follow on CORS preflight).
-const API_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8009").replace(/\/+$/, "");
+// The API is served from this site's own address: Vercel forwards /api to the backend, and so does the Vite dev
+// server. That keeps the session cookies first-party.
+const API_URL = "";
 
-const ACCESS_KEY = "papermind_access";
-const REFRESH_KEY = "papermind_refresh";
+// The session lives in httpOnly cookies that this script can't read. This flag only remembers that someone signed
+// in, so the app can pick the right page before asking the server. It is not a credential.
+const SIGNED_IN = "papermind_signed_in";
 
-export function getAccess() {
-  return localStorage.getItem(ACCESS_KEY);
+// Tokens used to be kept here. Drop any left over from before.
+try {
+  localStorage.removeItem("papermind_access");
+  localStorage.removeItem("papermind_refresh");
+} catch {
+  /* storage blocked */
 }
 
-export function setTokens(access, refresh) {
-  if (access) localStorage.setItem(ACCESS_KEY, access);
-  if (refresh) localStorage.setItem(REFRESH_KEY, refresh);
+function markSignedIn() {
+  try {
+    localStorage.setItem(SIGNED_IN, "1");
+  } catch {
+    /* storage blocked: the app still works, it just starts on the landing page */
+  }
 }
 
-export function clearTokens() {
-  localStorage.removeItem(ACCESS_KEY);
-  localStorage.removeItem(REFRESH_KEY);
+/** Forget the session in this browser: the server clears the cookies, and the local flag goes too. */
+export function clearSession() {
+  try {
+    localStorage.removeItem(SIGNED_IN);
+  } catch {
+    /* storage blocked */
+  }
+  return fetch(API_URL + "/api/auth/logout/", { method: "POST" }).catch(() => {});
 }
 
 export function isAuthenticated() {
-  return Boolean(getAccess());
+  try {
+    return localStorage.getItem(SIGNED_IN) === "1";
+  } catch {
+    return false;
+  }
 }
 
 // One refresh at a time: when several requests hit an expired token together
@@ -29,32 +46,19 @@ let refreshing = null;
 
 async function refreshAccess() {
   if (!refreshing) {
-    refreshing = (async () => {
-      const refresh = localStorage.getItem(REFRESH_KEY);
-      if (!refresh) return false;
-      try {
-        const res = await fetch(API_URL + "/api/auth/token/refresh/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refresh }),
-        });
-        if (!res.ok) return false;
-        const data = await res.json();
-        setTokens(data.access, null);
-        return true;
-      } catch {
-        return false;
-      }
-    })().finally(() => {
-      refreshing = null;
-    });
+    refreshing = fetch(API_URL + "/api/auth/token/refresh/", { method: "POST" })
+      .then((res) => res.ok)
+      .catch(() => false)
+      .finally(() => {
+        refreshing = null;
+      });
   }
   return refreshing;
 }
 
 /** The session is over: forget the tokens and go to sign in, remembering where we were. */
 function sessionExpired() {
-  clearTokens();
+  clearSession();
   if (window.location.pathname === "/login") return;
   const here = window.location.pathname + window.location.search;
   window.location.assign("/login?next=" + encodeURIComponent(here));
@@ -77,8 +81,6 @@ async function parse(res) {
 
 export async function apiRequest(path, { method = "GET", body, form, retry = true } = {}) {
   const headers = {};
-  const access = getAccess();
-  if (access) headers["Authorization"] = "Bearer " + access;
 
   let payload;
   if (form) {
@@ -90,7 +92,7 @@ export async function apiRequest(path, { method = "GET", body, form, retry = tru
 
   const res = await fetch(API_URL + path, { method, headers, body: payload });
 
-  if (res.status === 401 && access) {
+  if (res.status === 401 && isAuthenticated()) {
     if (retry && (await refreshAccess())) {
       return apiRequest(path, { method, body, form, retry: false });
     }
@@ -108,28 +110,25 @@ export const api = {
       body: { email, password },
       retry: false,
     });
-    setTokens(data.access, data.refresh);
+    markSignedIn();
     return data;
   },
+  logout: () => clearSession(),
   me: () => apiRequest("/api/auth/me/"),
-  /** Changing the password ends every session, so keep the new pair the server returns for this one. */
-  changePassword: async (payload) => {
-    const data = await apiRequest("/api/auth/password/", { method: "POST", body: payload });
-    setTokens(data.access, data.refresh);
-    return data;
-  },
+  /** Changing the password ends every session. The server sets new cookies for this one. */
+  changePassword: (payload) => apiRequest("/api/auth/password/", { method: "POST", body: payload }),
   forgotPassword: (email) => apiRequest("/api/auth/password/forgot/", { method: "POST", body: { email }, retry: false }),
   resetPassword: (payload) => apiRequest("/api/auth/password/reset/", { method: "POST", body: payload, retry: false }),
   /** Exchange a Google ID token (from the Google button) for our JWT pair; creates the account on first use. */
   /** A private demo: the server makes a fresh account with a copy of the sample document and signs us in. */
   startDemo: async () => {
     const data = await apiRequest("/api/auth/demo/", { method: "POST", retry: false });
-    setTokens(data.access, data.refresh);
+    markSignedIn();
     return data;
   },
   loginWithGoogle: async (credential) => {
     const data = await apiRequest("/api/auth/google/", { method: "POST", body: { credential }, retry: false });
-    setTokens(data.access, data.refresh);
+    markSignedIn();
     return data;
   },
 

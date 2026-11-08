@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
-import { api, clearTokens } from "../api.js";
+import { api, clearSession } from "../api.js";
 import Brand from "../components/Brand.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import { useDocumentTitle } from "../utils/useDocumentTitle.js";
@@ -31,7 +31,7 @@ export default function ResetPassword() {
     try {
       await api.resetPassword({ uid, token, new_password: password });
       // Any session in this browser has just ended too.
-      clearTokens();
+      clearSession();
       setDone(true);
     } catch (err) {
       setError(err.data?.new_password?.[0] || err.message || "Something went wrong.");

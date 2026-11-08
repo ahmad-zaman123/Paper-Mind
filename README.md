@@ -70,7 +70,7 @@ python manage.py runserver 8009   # the frontend expects port 8009
 ```bash
 cd Frontend
 npm install
-cp .env.example .env              # VITE_API_URL=http://127.0.0.1:8009
+cp .env.example .env              # the dev server proxies /api to VITE_API_URL (http://127.0.0.1:8009)
 npm run dev
 ```
 
@@ -99,7 +99,7 @@ npm run dev
 | `GEMINI_CHAT_MODEL` | no | Defaults to `models/gemini-2.5-flash`. |
 | `GEMINI_FALLBACK_MODELS` | no | Comma-separated, tried in order when the chat model fails. Defaults to `models/gemini-2.5-flash-lite,models/gemini-3.1-flash-lite,models/gemini-3.5-flash-lite`. |
 
-Frontend: `VITE_API_URL` points at the backend (default `http://127.0.0.1:8009`); `VITE_GOOGLE_CLIENT_ID` is the same Google client id, only needed for the Google button.
+Frontend: `VITE_API_URL` is where the Vite dev server proxies `/api` (default `http://127.0.0.1:8009`). It isn't used in production: there `Frontend/vercel.json` rewrites `/api/*` to the backend, so the login cookies belong to the site itself. `VITE_GOOGLE_CLIENT_ID` is the same Google client id, only needed for the Google button.
 
 </details>
 
@@ -189,7 +189,7 @@ Each answer links back to the exact passages used, with their page and similarit
 Prior turns are kept, so follow-up questions work.
 
 ### 🔒 Private by default
-JWT authentication, and each user only sees their own documents.
+JWT sessions kept in httpOnly cookies that page scripts can't read, and each user only sees their own documents.
 
 </td>
 </tr>
@@ -204,7 +204,7 @@ JWT authentication, and each user only sees their own documents.
 
 ## 🔌 API
 
-Interactive Swagger docs at **`/api/docs/`** ([live](https://paper-mind-backend-olive.vercel.app/api/docs/)), JSON schema at `/api/schema/`. Everything needs a JWT except registration, login and starting a demo.
+Interactive Swagger docs at **`/api/docs/`** ([live](https://paper-mind-backend-olive.vercel.app/api/docs/)), JSON schema at `/api/schema/`. Everything needs a JWT except registration, login and starting a demo. The site keeps it in httpOnly cookies (`access_token`, `refresh_token`). An `Authorization: Bearer` header with the cookie's token works too, for scripts and Swagger.
 
 | Area | Endpoints |
 |---|---|

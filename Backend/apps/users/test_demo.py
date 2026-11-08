@@ -22,6 +22,12 @@ from apps.users.serializers import UserSerializer
 
 DEMO = "/api/auth/demo/"
 
+def tokens_of(response):
+    """The tokens a sign-in reply set as httpOnly cookies. The body never carries them."""
+    assert "access" not in response.json() and "refresh" not in response.json()
+    return {name: response.cookies[f"{name}_token"].value for name in ("access", "refresh") if f"{name}_token" in response.cookies}
+
+
 
 def vector(first):
     return [first] + [0.0] * 767
@@ -61,12 +67,12 @@ class DemoTests(TestCase):
         return {"HTTP_AUTHORIZATION": f"Bearer {access}"}
 
     def test_me_says_whether_the_account_is_a_demo(self):
-        me = self.client.get("/api/auth/me/", **self.auth(self.start().json()["access"])).json()
+        me = self.client.get("/api/auth/me/", **self.auth(tokens_of(self.start())["access"])).json()
         self.assertIs(me["is_demo"], True)
         self.assertIs(UserSerializer(User(email="sara@example.com")).data["is_demo"], False)
 
     def demo_user(self, response):
-        email = self.client.get("/api/auth/me/", **self.auth(response.json()["access"])).json()["email"]
+        email = self.client.get("/api/auth/me/", **self.auth(tokens_of(response)["access"])).json()["email"]
         return User.objects.get(email=email)
 
     def test_demo_gets_a_copy_of_the_template(self):
@@ -101,8 +107,8 @@ class DemoTests(TestCase):
         genai.Client.assert_not_called()
 
     def test_each_visitor_sees_only_their_own_copy(self):
-        first = self.start().json()["access"]
-        second = self.start().json()["access"]
+        first = tokens_of(self.start())["access"]
+        second = tokens_of(self.start())["access"]
         mine = self.client.get("/api/documents/", **self.auth(first)).json()
         theirs = self.client.get("/api/documents/", **self.auth(second)).json()
         ids = lambda page: {d["id"] for d in page.get("results", page)}  # noqa: E731
@@ -113,7 +119,7 @@ class DemoTests(TestCase):
     def test_deleting_in_a_demo_leaves_the_template_alone(self):
         response = self.start()
         copy = Document.objects.get(owner=self.demo_user(response))
-        deleted = self.client.delete(f"/api/documents/{copy.id}/", **self.auth(response.json()["access"]))
+        deleted = self.client.delete(f"/api/documents/{copy.id}/", **self.auth(tokens_of(response)["access"]))
         self.assertIn(deleted.status_code, (200, 204))
         self.assertTrue(Document.objects.filter(id=self.doc.id).exists())
 
@@ -158,7 +164,7 @@ class DemoTests(TestCase):
         self.assertEqual(User.objects.filter(email__endswith="@" + DEMO_DOMAIN).count(), 4)
 
     def test_demo_cannot_set_a_password(self):
-        access = self.start().json()["access"]
+        access = tokens_of(self.start())["access"]
         response = self.client.post(
             "/api/auth/password/", {"new_password": "a-new-password-1"}, format="json", **self.auth(access)
         )
